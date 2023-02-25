@@ -1,17 +1,43 @@
-{% extends "base.html" %} {% import 'bootstrap/wtf.html' as wtf %} {% block
-content %}
+{% extends "base.html" %} {% block content %}
 <div class="column is-4 is-offset-4">
   <h3 class="title">Login</h3>
   <div class="box">
     {% with messages = get_flashed_messages() %} {% if messages %}
     <div class="notification is-danger">{{ messages[0] }}</div>
     {% endif %} {% endwith %}
-    <form method="POST" action="{{ url_for('auth.login') }}">
-      {{ form.hidden_tag() }} {{ wtf.form_field(form.email, label={'class':
-      'label'}, class='input') }} {{ wtf.form_errors(form.email) }} {{
-      wtf.form_field(form.password, label={'class': 'label'}, class='input') }}
-      {{ wtf.form_errors(form.password) }} {{ wtf.form_field(form.remember) }}
-      {{ wtf.form_field(form.submit) }}
+
+    <form method="POST" action="/login">
+      <div class="field">
+        <div class="control">
+          <input
+            class="input is-large"
+            type="email"
+            name="email"
+            placeholder="Your Email"
+            autofocus=""
+          />
+        </div>
+      </div>
+
+      <div class="field">
+        <div class="control">
+          <input
+            class="input is-large"
+            type="password"
+            name="password"
+            placeholder="Your Password"
+          />
+        </div>
+      </div>
+      <div class="field">
+        <label class="checkbox">
+          <input type="checkbox" name="remember" />
+          Remember me
+        </label>
+      </div>
+      <button class="button is-block is-info is-large is-fullwidth">
+        Login
+      </button>
     </form>
   </div>
 </div>

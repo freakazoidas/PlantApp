@@ -2,59 +2,68 @@ from flask import Blueprint, flash, redirect, render_template, request, url_for
 from flask_login import login_required, login_user, logout_user
 from werkzeug.security import check_password_hash, generate_password_hash
 
-from flask_wtf import FlaskForm
-
-from wtforms import StringField, PasswordField, SubmitField
-from wtforms.validators import DataRequired, Email, EqualTo
-
-
 from . import db
-from .models import User, SignupForm, LoginForm
+from .models import User
 
 auth = Blueprint('auth', __name__)
 
-
-@auth.route('/signup', methods=['GET', 'POST'])
-def signup():
-    form = SignupForm()
-
-    if form.validate_on_submit():
-        user = User.query.filter_by(email=form.email.data).first()
-        if user is None:
-            user = User(name=form.name.data, email=form.email.data)
-            user.set_password(form.password.data)
-            db.session.add(user)
-            db.session.commit()
-            flash('Congratulations, you are now a registered user!')
-            return redirect(url_for('auth.login'))
-        else:
-            flash('User with the same email already exists.')
-            return redirect(url_for('auth.signup'))
-
-    # pass errors dictionary to template
-    return render_template('signup.html', errors=form.errors, form=form)
-
-@auth.route('/login', methods=['GET', 'POST'])
+@auth.route('/login')
 def login():
-    form = LoginForm()
-    if form.validate_on_submit():
-        email = form.email.data
-        password = form.password.data
-        remember = form.remember.data
+    return render_template('login.html')
 
-        # check if the user actually exists
-        user = User.query.filter_by(email=email).first()
+@auth.route('/login', methods=['POST'])
+def login_post():
+    # login code goes here
+    email = request.form.get('email')
+    password = request.form.get('password')
+    remember = True if request.form.get('remember') else False
 
-        # take the user-supplied password, hash it, and compare it to the hashed password in the database
-        if not user or not check_password_hash(user.password, password):
-            flash('Please check your login details and try again.')
-            return redirect(url_for('auth.login'))
+    user = User.query.filter_by(email=email).first()
 
-        # if the above check passes, then we know the user has the right credentials
-        login_user(user, remember=remember)
-        return redirect(url_for('main.groups'))
+    # check if the user actually exists
+    # take the user-supplied password, hash it, and compare it to the hashed password in the database
+    if not user or not check_password_hash(user.password, password):
+        flash('Please check your login details and try again.')
+        return redirect(url_for('auth.login')) # if the user doesn't exist or password is wrong, reload the page
 
-    return render_template('login.html', form=form)
+    # if the above check passes, then we know the user has the right credentials
+    login_user(user, remember=remember)
+    return redirect(url_for('main.groups'))
+
+
+
+
+
+@auth.route('/signup')
+def signup():
+    return render_template('signup.html')
+
+
+@auth.route('/signup', methods=['POST'])
+def signup_post():
+    # code to validate and add user to database goes here
+    email = request.form.get('email')
+    name = request.form.get('name')
+    password = request.form.get('password')
+    confirm_password = request.form.get('confirm_password')
+
+    user = User.query.filter_by(email=email).first() # if this returns a user, then the email already exists in database
+    if user: # if a user is found, we want to redirect back to signup page so user can try again
+        flash('Email address already exists')
+        return redirect(url_for('auth.signup'))
+
+    if password != confirm_password:
+        flash('Passwords do not match, please try again')
+        return redirect(url_for('auth.signup'))
+
+    # create a new user with the form data. Hash the password so the plaintext version isn't saved.
+    new_user = User(email=email, name=name, password=generate_password_hash(password, method='sha256'))
+
+    # add the new user to the database
+    db.session.add(new_user)
+    db.session.commit()
+
+    return redirect(url_for('auth.login'))
 
 
 @auth.route('/logout')
