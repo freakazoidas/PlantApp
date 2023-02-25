@@ -1,4 +1,6 @@
-{% extends "base.html" %} {% block content %}
+{% extends "base.html" %} {% import 'bootstrap/wtf.html' as wtf %} {% block
+content %}
+
 <div class="column is-4 is-offset-4">
   <h3 class="title">Sign Up</h3>
   <div class="box">
@@ -8,57 +10,20 @@
       <a href="{{ url_for('auth.login') }}">login page</a>.
     </div>
     {% endif %} {% endwith %}
-    <form method="POST" action="/signup">
-      <div class="field">
-        <div class="control">
-          <input
-            class="input is-large"
-            type="email"
-            name="email"
-            placeholder="Email"
-            autofocus=""
-          />
-        </div>
+    <form method="POST" action="{{ url_for('auth.signup') }}">
+      {{ form.hidden_tag() }} {{ wtf.form_field(form.email, label={'class':
+      'label'}, class='input') }} {{ wtf.form_field(form.name, label={'class':
+      'label'}, class='input') }} {{ wtf.form_field(form.password,
+      label={'class': 'label'}, class='input') }} {{
+      wtf.form_field(form.confirm_password, label={'class': 'label'},
+      class='input') }} {{ wtf.form_field(form.submit) }} {% if errors %}
+      <div class="notification is-danger">
+        {% for field, error_msgs in errors.items() %} {% for msg in error_msgs
+        %} {{ field }} - {{ msg }}<br />
+        {% endfor %} {% endfor %}
       </div>
-
-      <div class="field">
-        <div class="control">
-          <input
-            class="input is-large"
-            type="text"
-            name="name"
-            placeholder="Name"
-            autofocus=""
-          />
-        </div>
-      </div>
-
-      <div class="field">
-        <div class="control">
-          <input
-            class="input is-large"
-            type="password"
-            name="password"
-            placeholder="Password"
-          />
-        </div>
-      </div>
-
-      <div class="field">
-        <div class="control">
-          <input
-            class="input is-large"
-            type="password"
-            name="confirm_password"
-            placeholder="Confirm Password"
-          />
-        </div>
-      </div>
-
-      <button class="button is-block is-info is-large is-fullwidth">
-        Sign Up
-      </button>
+      {% endif %}
     </form>
   </div>
 </div>
-{% endblock %}
+{% endblock %}```
