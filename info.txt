@@ -1,0 +1,18 @@
+dali info uzpopuliuot
+augalu kategorijas/json
+defaultinis laistymo dasznis pagal augalo rusi
+pasirinkus kategorija butu galima pasirinkt augalus
+pasirinkt is dropdown augalus
+dropdownas susijes su kito dropdownu
+extension for query 
+laistymas - pasirinkti kada palaistyta arba pasirinkt salia
+emeilas - cronjob 
+
+laistymas ir trasos,
+dropdown sukulentai, kaktusai
+
+augalu kategorijos, seimos kaip jie klasifikuojami
+jei pasirenka is dropdowno, uzpildo automatiskai
+
+
+jei pasirenki - uzpildo, jei ne - pildai pats.

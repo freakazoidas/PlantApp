@@ -1,0 +1,64 @@
+{% extends "base.html" %} {% block content %}
+
+<section class="section mt-5">
+  <div class="container">
+    <h1 class="title text-center">Welcome, {{ name }}!</h1>
+    <h2 class="subtitle text-center">
+      Please find selected bill #{{ bill_group.id }} items below
+    </h2>
+    <div class="table-container mt-5 mx-auto">
+      <table class="table is-bordered is-striped">
+        <thead>
+          <tr>
+            <th>Bill ID</th>
+            <th>Bill Item</th>
+            <th>Item Price</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for bill_item in bill_items %}
+          <tr>
+            <td>{{ bill_group.id }}</td>
+            <td>{{ bill_item.bill_item }}</td>
+            <td>{{ '%.2f' % bill_item.item_price }} €</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+  <div class="container mt-5">
+    <h2 class="subtitle">Add a new bill item</h2>
+    <form
+      method="post"
+      action="{{ url_for('main.bill', bill_id=bill_group.id) }}"
+    >
+      <div class="field">
+        <div class="control">
+          <input
+            type="text"
+            name="bill_item"
+            class="input mt-2"
+            placeholder="New Bill Item"
+          />
+        </div>
+      </div>
+      <div class="field">
+        <div class="control">
+          <input
+            type="text"
+            name="item_price"
+            class="input mt-2"
+            placeholder="Item Price"
+          />
+        </div>
+      </div>
+      <div class="field">
+        <div class="control">
+          <button class="button is-success mt-2">Submit</button>
+        </div>
+      </div>
+    </form>
+  </div>
+</section>
+{% endblock %}

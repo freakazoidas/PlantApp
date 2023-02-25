@@ -1,0 +1,57 @@
+{% extends "base.html" %} {% block content %}
+
+<section class="section mt-5">
+  <div class="container">
+    <h1 class="title text-center">Welcome, {{ name }}!</h1>
+    <h2 class="subtitle text-center">
+      Please find your assigned bill groups below
+    </h2>
+    <div class="table-container mt-5 mx-auto">
+      <table class="table is-bordered is-striped">
+        <thead>
+          <tr>
+            <th class="has-text-centered">Bill groups</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for group in groups %} {% if group.id in user_group_ids %}
+          <tr>
+            <td class="has-text-centered">
+              <a
+                href="{{ url_for('main.bill', bill_id=group.id) }}"
+                class="button is-fullwidth is-primary"
+                >{{ group.group_name }}</a
+              >
+            </td>
+          </tr>
+          {% endif %} {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+  <div class="container mt-5">
+    <h2 class="subtitle">Add a new Group</h2>
+    <div class="field">
+      <div class="control">
+        <form method="POST" action="{{ url_for('main.groups') }}">
+          <div class="field">
+            <div class="control">
+              <input
+                type="text"
+                name="group_name"
+                class="input mt-2"
+                placeholder="Group Name"
+              />
+            </div>
+          </div>
+          <div class="field">
+            <div class="control">
+              <button class="button is-success mt-2">Add Group</button>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}
