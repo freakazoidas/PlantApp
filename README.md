@@ -1,6 +1,7 @@
 # BillSplit6
 
 How to run:  
+$ python3 -m venv auth  
 $ . auth/Scripts/activate (for windows)  
 $ . auth/bin/activate (for ubuntu)  
 $ pip install -r requirements.txt  
