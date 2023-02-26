@@ -6,7 +6,8 @@ $ . auth/Scripts/activate (for windows)
 $ . auth/bin/activate (for ubuntu)  
 $ pip install -r requirements.txt  
 $ export FLASK_APP=project  
-$ flask run
+$ flask run  
+$ pip freeze > requirements.txt (don't forget to run this once in a while)
 
 tou can use these credentials to test:  
 id:  
