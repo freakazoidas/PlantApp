@@ -1,55 +1,41 @@
 from flask_login import UserMixin
-from sqlalchemy import Column, ForeignKey, Integer, String
-from sqlalchemy.ext.declarative import declarative_base
-# from sqlalchemy.orm import mapped_column
-# from sqlalchemy.orm import DeclarativeBase
-from sqlalchemy.orm import Mapped, relationship
-from flask_wtf import FlaskForm
+from sqlalchemy import Column, ForeignKey, Integer, Numeric, String
+from sqlalchemy.orm import relationship
+from werkzeug.security import check_password_hash, generate_password_hash
 
-from wtforms import StringField, PasswordField, SubmitField, BooleanField
-from wtforms.validators import DataRequired, Email, EqualTo
 from . import db
 
 
 class User(UserMixin, db.Model):
-    id = db.Column(db.Integer, primary_key=True) # primary keys are required by SQLAlchemy
-    email = db.Column(db.String(100), unique=True)
-    password = db.Column(db.String(100))
-    name = db.Column(db.String(1000))
-    
-    
-class SignupForm(FlaskForm):
-    email = StringField('Email', validators=[DataRequired(), Email()])
-    name = StringField('Name', validators=[DataRequired()])
-    password = PasswordField('Password', validators=[DataRequired(), EqualTo('confirm_password', message='Passwords must match')])
-    confirm_password = PasswordField('Confirm Password', validators=[DataRequired()])
-    submit = SubmitField('Sign Up')
+    id = Column(Integer, primary_key=True)
+    email = Column(String(100), unique=True)
+    password = Column(String(100))
+    name = Column(String(1000))
 
-class LoginForm(FlaskForm):
-    email = StringField('Email', validators=[DataRequired(), Email()])
-    password = PasswordField('Password', validators=[DataRequired()])
-    remember = BooleanField('Remember Me')
-    submit = SubmitField('Login')
-class BillGroups (db.Model):
-    __tablename__='bill_groups'
-    id = db.Column(db.Integer, primary_key=True) # primary keys are required by SQLAlchemy
-    group_name = db.Column(db.String(255), unique=True)
-    bill_intermediaries = db.relationship("BillGroupIntermediary")
+    def set_password(self, password):
+        self.password = generate_password_hash(password)
 
-class BillGroupIntermediary (db.Model):
+    def check_password(self, password):
+        return check_password_hash(self.password, password)
+
+
+class BillGroups(db.Model):
+    __tablename__ = 'bill_groups'
+    id = Column(Integer, primary_key=True)
+    group_name = Column(String(255), unique=True)
+    bill_intermediaries = relationship("BillGroupIntermediary", back_populates="bill_groups")
+
+class BillGroupIntermediary(db.Model):
     __tablename__ = 'group_user_intermediary'
-    id = db.Column(db.Integer, primary_key=True) # primary keys are required by SQLAlchemy
-    user_id = db.Column (db.Integer, db.ForeignKey('user.id'))
-    group_id = db.Column (db.Integer, db.ForeignKey('bill_groups.id'))
-    user = db.relationship("User")
-    bill_groups = db.relationship("BillGroups")
+    id = Column(Integer, primary_key=True)
+    user_id = Column(Integer, ForeignKey('user.id'))
+    group_id = Column(Integer, ForeignKey('bill_groups.id'))
+    user = relationship("User")
+    bill_groups = relationship("BillGroups", back_populates="bill_intermediaries")
 
-
-class IndividualBill (db.Model):
+class IndividualBill(db.Model):
     __tablename__ = 'individual_bill'
-    id = db.Column(db.Integer, primary_key=True) # primary keys are required by SQLAlchemy
-    bill_id = db.Column (db.Integer, db.ForeignKey('bill_groups.id'))
-    bill_item = db.Column(db.String(255))
-    item_price = db.Column(db.Numeric(100))
-
-
+    id = Column(Integer, primary_key=True)
+    bill_id = Column(Integer, ForeignKey('bill_groups.id'))
+    bill_item = Column(String(255))
+    item_price = Column(Numeric(100, 2))

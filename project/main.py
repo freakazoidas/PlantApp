@@ -39,6 +39,7 @@ def groups():
 
 from flask import redirect, url_for
 
+
 @main.route('/groups/<int:bill_id>', methods=['GET', 'POST'])
 @login_required
 def bill(bill_id):

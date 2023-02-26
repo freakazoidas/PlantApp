@@ -1,63 +1,62 @@
 from flask import Blueprint, flash, redirect, render_template, request, url_for
 from flask_login import login_required, login_user, logout_user
-from werkzeug.security import check_password_hash, generate_password_hash
+from werkzeug.urls import url_parse
 
-from flask_wtf import FlaskForm
+from .forms import LoginForm, RegistrationForm
+from .models import User, db
 
-from wtforms import StringField, PasswordField, SubmitField
-from wtforms.validators import DataRequired, Email, EqualTo
+auth_bp = Blueprint('auth', __name__, url_prefix='/auth')
 
-
-from . import db
-from .models import User, SignupForm, LoginForm
-
-auth = Blueprint('auth', __name__)
-
-
-@auth.route('/signup', methods=['GET', 'POST'])
+@auth_bp.route('/signup', methods=['GET', 'POST'])
 def signup():
-    form = SignupForm()
-
+    form = RegistrationForm()
     if form.validate_on_submit():
-        user = User.query.filter_by(email=form.email.data).first()
-        if user is None:
-            user = User(name=form.name.data, email=form.email.data)
-            user.set_password(form.password.data)
-            db.session.add(user)
-            db.session.commit()
-            flash('Congratulations, you are now a registered user!')
-            return redirect(url_for('auth.login'))
-        else:
-            flash('User with the same email already exists.')
+        username = form.username.data
+        email = form.email.data
+        password = form.password.data
+
+        # Check if username or email already exist
+        if User.query.filter_by(email=email).first() is not None:
+            flash('Email already registered')
             return redirect(url_for('auth.signup'))
 
-    # pass errors dictionary to template
-    return render_template('signup.html', errors=form.errors, form=form)
+        # Add new user to database
+        user = User(email=email, name=username)
+        user.set_password(password)
+        db.session.add(user)
+        db.session.commit()
 
-@auth.route('/login', methods=['GET', 'POST'])
+        flash('Congratulations, you are now a registered user!')
+        return redirect(url_for('auth.login'))
+
+    return render_template('signup.html', title='Sign Up', form=form)
+
+@auth_bp.route('/login', methods=['GET', 'POST'])
 def login():
     form = LoginForm()
     if form.validate_on_submit():
         email = form.email.data
         password = form.password.data
-        remember = form.remember.data
+        remember = form.remember_me.data
 
-        # check if the user actually exists
+        # Check if email is registered and password is correct
         user = User.query.filter_by(email=email).first()
-
-        # take the user-supplied password, hash it, and compare it to the hashed password in the database
-        if not user or not check_password_hash(user.password, password):
-            flash('Please check your login details and try again.')
+        if user is None or not user.check_password(password):
+            flash('Invalid email or password', category='error')
             return redirect(url_for('auth.login'))
 
-        # if the above check passes, then we know the user has the right credentials
+        # Log user in and redirect to next page
         login_user(user, remember=remember)
-        return redirect(url_for('main.groups'))
+        next_page = request.args.get('next')
+        if not next_page or url_parse(next_page).netloc != '':
+            next_page = url_for('main.index')
+        return redirect(next_page)
 
-    return render_template('login.html', form=form)
+    return render_template('login.html', title='Log In', form=form)
 
 
-@auth.route('/logout')
+
+@auth_bp.route('/logout')
 @login_required
 def logout():
     logout_user()
