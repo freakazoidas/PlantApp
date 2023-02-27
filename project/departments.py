@@ -2,7 +2,7 @@ from flask import Blueprint, redirect, render_template, request, url_for
 from flask_login import current_user, login_required
 
 from . import db
-from .models import Departments, Projects
+from .models import Departments, Projects, ProjectsDepartmentsIntermediary
 
 departments_bp = Blueprint('departments', __name__, url_prefix='/departments')
 
@@ -23,7 +23,7 @@ def list_departments():
 @login_required
 def department(department_id):
     department = Departments.query.filter_by(id=department_id).first()
-    projects = Projects.query.filter_by(department_id=department_id).all()
+    projects = db.session.query(Projects).join(ProjectsDepartmentsIntermediary).filter_by(department_id=department_id)
 
     if request.method == 'POST':
         department_name = request.form['department_name']
@@ -37,15 +37,15 @@ def department(department_id):
 @login_required
 def project(project_id):
     project = Projects.query.filter_by(id=project_id).first()
+    departments = Departments.query.all()
 
     if request.method == 'POST':
         project_name = request.form['project_name']
         project_description = request.form['project_description']
-        department_id = request.form['department_id']
+        department_ids = request.form.getlist('department_id')
 
         project.project_name = project_name
         project.project_description = project_description
-        project.department_id = department_id
 
         if 'project_picture' in request.files:
             project_picture = request.files['project_picture']
@@ -53,10 +53,21 @@ def project(project_id):
                 project_picture.save('static/images/' + project_picture.filename)
                 project.project_picture = project_picture.filename
 
+        # Clear the current project's departments
+        project.departments.clear()
+
+        # Add the selected departments to the project
+        for department_id in department_ids:
+            department = Departments.query.filter_by(id=department_id).first()
+            intermediary = ProjectsDepartmentsIntermediary(project=project, department=department)
+            db.session.add(intermediary)
+
         db.session.commit()
         return redirect(url_for('departments.project', project_id=project_id))
 
-    return render_template('project.html', project=project, departments=Departments.query.all())
+    return render_template('project.html', project=project, departments=departments)
+
+
 
 @departments_bp.route('/projects', methods=['GET', 'POST'])
 @login_required
@@ -74,11 +85,12 @@ def projects():
             if project_picture.filename != '':
                 project_picture.save('static/images/' + project_picture.filename)
 
+        department = Departments.query.filter_by(id=department_id).first()
         new_project = Projects(
             project_name=project_name,
             project_description=project_description,
             project_picture=project_picture.filename if project_picture else None,
-            department_id=department_id
+            departments=[ProjectsDepartmentsIntermediary(department=department)]
         )
         db.session.add(new_project)
         db.session.commit()

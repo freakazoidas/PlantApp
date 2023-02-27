@@ -40,22 +40,19 @@ class IndividualBill(db.Model):
     bill_item = Column(String(255))
     item_price = Column(Numeric(100, 2))
 
-
-class Departments(db.Model):
-    __tablename__ = 'departments'
-    id = Column(Integer, primary_key=True)
-    department_name = Column(String(255), nullable=False)
-    projects = relationship("ProjectsDepartmentsIntermediary", back_populates="department")
-
-
 class Projects(db.Model):
     __tablename__ = 'projects'
     id = Column(Integer, primary_key=True)
     project_name = Column(String(255), nullable=False)
     project_description = Column(String(1000), nullable=False)
     project_picture = Column(String(1000), nullable=True)
-    departments = relationship("ProjectsDepartmentsIntermediary", back_populates="project")
+    departments = relationship("ProjectsDepartmentsIntermediary", back_populates="project", cascade="all, delete-orphan")
 
+class Departments(db.Model):
+    __tablename__ = 'departments'
+    id = Column(Integer, primary_key=True)
+    department_name = Column(String(255), nullable=False)
+    projects = relationship("ProjectsDepartmentsIntermediary", back_populates="department", cascade="all, delete-orphan")
 
 class ProjectsDepartmentsIntermediary(db.Model):
     __tablename__ = 'projects_departments_intermediary'

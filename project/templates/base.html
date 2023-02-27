@@ -22,12 +22,23 @@
                   Home
                 </a>
                 {% if current_user.is_authenticated %}
-
                 <a href="{{ url_for('main.profile') }}" class="navbar-item">
                   Profile
                 </a>
                 <a href="{{ url_for('main.groups') }}" class="navbar-item">
                   Groups
+                </a>
+                <a
+                  href="{{ url_for('departments.list_departments') }}"
+                  class="navbar-item"
+                >
+                  Departments
+                </a>
+                <a
+                  href="{{ url_for('departments.projects') }}"
+                  class="navbar-item"
+                >
+                  Projects
                 </a>
                 {% endif %} {% if not current_user.is_authenticated %}
                 <a href="{{ url_for('auth.login') }}" class="navbar-item">
