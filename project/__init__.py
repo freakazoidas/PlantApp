@@ -30,7 +30,8 @@ def create_app():
     # register blueprints with app
     from .auth import auth_bp
     from .models import (BillGroupIntermediary, BillGroups, Departments,
-                         IndividualBill, Projects, User)
+                         IndividualBill, Projects,
+                         ProjectsDepartmentsIntermediary, User)
     app.register_blueprint(auth_bp)
 
     from .main import main
