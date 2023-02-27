@@ -2411,3 +2411,4 @@ auth/Scripts/pip3.10.exe
 auth/Scripts/pip3.exe
 auth/Scripts/python.exe
 auth/Scripts/pythonw.exe
+migrations

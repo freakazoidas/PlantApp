@@ -56,4 +56,4 @@ class Projects(db.Model):
     project_picture = Column(String(1000), nullable=True)
     department_id = Column(Integer, ForeignKey('departments.id'))
 
-    department = relationship("Departments", backref="projects", cascade="all, delete-orphan")
+    department = relationship("Departments", backref="projects", single_parent=True, cascade="all, delete-orphan")

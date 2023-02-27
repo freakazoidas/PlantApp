@@ -1,37 +1,47 @@
 from flask import Flask
 from flask_bootstrap import Bootstrap
 from flask_login import LoginManager
+from flask_migrate import Migrate
 from flask_sqlalchemy import SQLAlchemy
 
-# init SQLAlchemy so we can use it later in our models
+# initialize extensions
 db = SQLAlchemy()
+bootstrap = Bootstrap()
+login_manager = LoginManager()
 
 def create_app():
     app = Flask(__name__)
-    bootstrap = Bootstrap(app)
 
+    # configure app
     app.config['SECRET_KEY'] = 'secret-key-goes-here'
     app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///db.sqlite'
 
+    # initialize extensions with app
     db.init_app(app)
-
-    login_manager = LoginManager()
-    login_manager.login_view = 'auth.login'
+    bootstrap.init_app(app)
     login_manager.init_app(app)
+    migrate = Migrate(app, db)
 
-    from .models import BillGroupIntermediary, BillGroups, IndividualBill, User
+    # create tables
+    with app.app_context():
+        db.create_all()
 
-    @login_manager.user_loader
-    def load_user(user_id):
-        # since the user_id is just the primary key of our user table, use it in the query for the user
-        return User.query.get(int(user_id))
-
-    # blueprint for auth routes in our app
+    # import models to register with app
+    # register blueprints with app
     from .auth import auth_bp
+    from .models import (BillGroupIntermediary, BillGroups, Departments,
+                         IndividualBill, Projects, User)
     app.register_blueprint(auth_bp)
 
-    # blueprint for non-auth parts of app
     from .main import main
     app.register_blueprint(main)
+
+    from .departments import departments_bp
+    app.register_blueprint(departments_bp)
+
+    # set up user loader for login manager
+    @login_manager.user_loader
+    def load_user(user_id):
+        return User.query.get(int(user_id))
 
     return app

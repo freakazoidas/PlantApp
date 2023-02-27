@@ -1,0 +1,51 @@
+{% extends 'base.html' %} {% block content %}
+
+<section class="section">
+  <div class="container">
+    <h1 class="title">Departments</h1>
+
+    <form method="POST" action="{{ url_for('departments.list_departments') }}">
+      <div class="field has-addons">
+        <div class="control is-expanded">
+          <input
+            class="input"
+            type="text"
+            name="department_name"
+            placeholder="Department Name"
+          />
+        </div>
+        <div class="control">
+          <button class="button is-primary" type="submit">
+            Create Department
+          </button>
+        </div>
+      </div>
+    </form>
+
+    <table class="table is-striped is-hoverable">
+      <thead>
+        <tr>
+          <th>Department Name</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for department in departments %}
+        <tr>
+          <td>{{ department.department_name }}</td>
+          <td>
+            <a
+              href="{{ url_for('departments.department', department_id=department.id) }}"
+              class="button is-info is-small"
+            >
+              View
+            </a>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+
+{% endblock %}
