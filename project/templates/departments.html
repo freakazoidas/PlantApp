@@ -7,9 +7,11 @@
     {% with messages = get_flashed_messages() %} {% if messages %}
     <div class="notification is-danger">
       <button class="delete"></button>
-      {% for message in messages %}
-      <p>{{ message }}</p>
-      {% endfor %}
+      <ul>
+        {% for message in messages %}
+        <li>{{ message }}</li>
+        {% endfor %}
+      </ul>
     </div>
     {% endif %} {% endwith %}
 
@@ -43,12 +45,26 @@
         <tr>
           <td>{{ department.department_name }}</td>
           <td>
-            <a
-              href="{{ url_for('departments.department', department_id=department.id) }}"
-              class="button is-info is-small"
-            >
-              View
-            </a>
+            <div class="buttons">
+              <a
+                href="{{ url_for('departments.department', department_id=department.id) }}"
+                class="button is-info is-small"
+              >
+                View
+              </a>
+              <form
+                method="POST"
+                action="{{ url_for('departments.delete_department', department_id=department.id) }}"
+              >
+                <button
+                  type="submit"
+                  class="button is-danger is-small delete"
+                  onclick="return confirm('Are you sure you want to delete this department?')"
+                >
+                  Delete
+                </button>
+              </form>
+            </div>
           </td>
         </tr>
         {% endfor %}

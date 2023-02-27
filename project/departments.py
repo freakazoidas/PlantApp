@@ -24,6 +24,16 @@ def list_departments():
 
     return render_template('departments.html', departments=departments)
 
+@departments_bp.route('/departments/<int:department_id>/delete', methods=['POST'])
+@login_required
+def delete_department(department_id):
+    department = Departments.query.filter_by(id=department_id).first()
+    db.session.delete(department)
+    db.session.commit()
+    flash('Department deleted successfully')
+    return redirect(url_for('departments.list_departments'))
+
+
 
 @departments_bp.route('/departments/<int:department_id>', methods=['GET', 'POST'])
 @login_required
