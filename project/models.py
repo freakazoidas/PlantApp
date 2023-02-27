@@ -39,3 +39,21 @@ class IndividualBill(db.Model):
     bill_id = Column(Integer, ForeignKey('bill_groups.id'))
     bill_item = Column(String(255))
     item_price = Column(Numeric(100, 2))
+
+
+
+class Departments(db.Model):
+    __tablename__ = 'departments'
+    id = Column(Integer, primary_key=True)
+    department_name = Column(String(255), nullable=False)
+
+
+class Projects(db.Model):
+    __tablename__ = 'projects'
+    id = Column(Integer, primary_key=True)
+    project_name = Column(String(255), nullable=False)
+    project_description = Column(String(1000), nullable=False)
+    project_picture = Column(String(1000), nullable=True)
+    department_id = Column(Integer, ForeignKey('departments.id'))
+
+    department = relationship("Departments", backref="projects", cascade="all, delete-orphan")
