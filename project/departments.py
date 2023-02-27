@@ -1,4 +1,4 @@
-from flask import Blueprint, redirect, render_template, request, url_for
+from flask import Blueprint, flash, redirect, render_template, request, url_for
 from flask_login import current_user, login_required
 
 from . import db
@@ -13,11 +13,17 @@ def list_departments():
 
     if request.method == 'POST':
         department_name = request.form['department_name']
-        new_department = Departments(department_name=department_name)
-        db.session.add(new_department)
-        db.session.commit()
+        # Check if department with same name already exists
+        existing_department = Departments.query.filter_by(department_name=department_name).first()
+        if existing_department:
+            flash('Department already exists')
+        else:
+            new_department = Departments(department_name=department_name)
+            db.session.add(new_department)
+            db.session.commit()
 
     return render_template('departments.html', departments=departments)
+
 
 @departments_bp.route('/departments/<int:department_id>', methods=['GET', 'POST'])
 @login_required

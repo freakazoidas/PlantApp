@@ -51,7 +51,7 @@ class Projects(db.Model):
 class Departments(db.Model):
     __tablename__ = 'departments'
     id = Column(Integer, primary_key=True)
-    department_name = Column(String(255), nullable=False)
+    department_name = Column(String(255), nullable=False, unique=True)
     projects = relationship("ProjectsDepartmentsIntermediary", back_populates="department", cascade="all, delete-orphan")
 
 class ProjectsDepartmentsIntermediary(db.Model):

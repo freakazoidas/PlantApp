@@ -4,6 +4,15 @@
   <div class="container">
     <h1 class="title">Departments</h1>
 
+    {% with messages = get_flashed_messages() %} {% if messages %}
+    <div class="notification is-danger">
+      <button class="delete"></button>
+      {% for message in messages %}
+      <p>{{ message }}</p>
+      {% endfor %}
+    </div>
+    {% endif %} {% endwith %}
+
     <form method="POST" action="{{ url_for('departments.list_departments') }}">
       <div class="field has-addons">
         <div class="control is-expanded">
