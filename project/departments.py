@@ -93,7 +93,7 @@ def projects():
     if request.method == 'POST':
         project_name = request.form['project_name']
         project_description = request.form['project_description']
-        department_id = request.form['department_id']
+        department_ids = request.form.getlist('department_ids')
         project_picture = None
 
         if 'project_picture' in request.files:
@@ -101,15 +101,29 @@ def projects():
             if project_picture.filename != '':
                 project_picture.save('static/images/' + project_picture.filename)
 
-        department = Departments.query.filter_by(id=department_id).first()
         new_project = Projects(
             project_name=project_name,
             project_description=project_description,
-            project_picture=project_picture.filename if project_picture else None,
-            departments=[ProjectsDepartmentsIntermediary(department=department)]
+            project_picture=project_picture.filename if project_picture else None
         )
+        for department_id in department_ids:
+            department = Departments.query.filter_by(id=department_id).first()
+            intermediary = ProjectsDepartmentsIntermediary(project=new_project, department=department)
+            new_project.departments.append(intermediary)
+
         db.session.add(new_project)
         db.session.commit()
         return redirect(url_for('departments.projects'))
 
     return render_template('projects.html', projects=projects, departments=Departments.query.all())
+
+@departments_bp.route('/projects/<int:project_id>/delete', methods=['POST'])
+@login_required
+def delete_project(project_id):
+    project = Projects.query.filter_by(id=project_id).first()
+    db.session.delete(project)
+    db.session.commit()
+    flash('Project deleted successfully')
+    return redirect(url_for('departments.projects'))
+
+

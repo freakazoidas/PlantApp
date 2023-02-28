@@ -27,17 +27,18 @@
       </div>
 
       <div class="field">
-        <label class="label">Department</label>
+        <label class="label">Departments</label>
         <div class="control">
-          <div class="select">
-            <select name="department_id" required>
-              {% for department in departments %}
-              <option value="{{ department.id }}">
-                {{ department.department_name }}
-              </option>
-              {% endfor %}
-            </select>
-          </div>
+          {% for department in departments %}
+          <label class="checkbox">
+            <input
+              type="checkbox"
+              name="department_ids[]"
+              value="{{ department.id }}"
+            />
+            {{ department.department_name }}
+          </label>
+          {% endfor %}
         </div>
       </div>
 
@@ -62,11 +63,12 @@
       </div>
     </form>
 
+    {% if projects %}
     <table class="table is-striped is-hoverable">
       <thead>
         <tr>
           <th>Project Name</th>
-          <th>Department</th>
+          <th>Departments</th>
           <th>Actions</th>
         </tr>
       </thead>
@@ -74,19 +76,34 @@
         {% for project in projects %}
         <tr>
           <td>{{ project.project_name }}</td>
-          <td>{{ project.departments[0].department_name }}</td>
+          <td>
+            {% for department in project.departments %} {{
+            department.department_name }}{% if not loop.last %}, {% endif %} {%
+            endfor %}
+          </td>
           <td>
             <a
               href="{{ url_for('departments.project', project_id=project.id) }}"
               class="button is-info is-small"
+              >View</a
             >
-              View
-            </a>
+            <form
+              method="POST"
+              action="{{ url_for('departments.delete_project', project_id=project.id) }}"
+              style="display: inline-block"
+            >
+              <button class="button is-danger is-small" type="submit">
+                Delete
+              </button>
+            </form>
           </td>
         </tr>
         {% endfor %}
       </tbody>
     </table>
+    {% else %}
+    <p>No projects found.</p>
+    {% endif %}
   </div>
 </section>
 {% endblock %}
