@@ -31,13 +31,72 @@
     <h2 class="subtitle">Existing Departments</h2>
     <ul>
       {% for department in departments %}
-      <li>
+      <li id="department-{{ department.id }}">
+        {% if department.editable %}
+        <form
+          method="post"
+          action="{{ url_for('departments.update_department', department_id=department.id) }}"
+          id="update-form-{{ department.id }}"
+        >
+          <div class="field is-grouped">
+            <div class="control is-expanded">
+              <span
+                id="department-name-{{ department.id }}"
+                style="display: none"
+                >{{ department.department_name }}</span
+              >
+              <input
+                class="input is-medium"
+                type="text"
+                name="department_name"
+                value="{{ department.department_name }}"
+              />
+            </div>
+            <div class="control" id="button-group-{{ department.id }}">
+              <button
+                class="button is-success is-medium"
+                type="submit"
+                id="save-button-{{ department.id }}"
+                style="display: none"
+              >
+                Save
+              </button>
+              <button
+                class="button is-danger is-medium"
+                onclick="cancelEdit({{ department.id }})"
+                type="button"
+                id="cancel-button-{{ department.id }}"
+                style="display: none"
+              >
+                Cancel
+              </button>
+              <button
+                class="button is-primary is-small"
+                onclick="editDepartment({{ department.id }}, this)"
+                type="button"
+                id="edit-button-{{ department.id }}"
+              >
+                Edit
+              </button>
+            </div>
+          </div>
+        </form>
+        {% else %}
+        <span id="department-name-{{ department.id }}"
+          >{{ department.department_name }}</span
+        >
+        <button
+          class="button is-primary is-small"
+          onclick="editDepartment({{ department.id }}, this)"
+        >
+          Edit
+        </button>
+        {% endif %}
         <form
           method="post"
           action="{{ url_for('departments.delete_department', department_id=department.id) }}"
           onsubmit="return confirm('Are you sure you want to delete this department?')"
         >
-          <span>{{ department.department_name }}</span>
           <button class="button is-danger is-small" type="submit">
             Delete
           </button>
@@ -47,4 +106,52 @@
     </ul>
   </div>
 </div>
+
+<script>
+  function editDepartment(id, editButton) {
+    var departmentNameElement = document.getElementById(
+      "department-name-" + id
+    );
+    var departmentName = departmentNameElement.textContent.trim();
+
+    // Create input element and set value
+    var inputElement = document.createElement("input");
+    inputElement.setAttribute("type", "text");
+    inputElement.setAttribute("name", "department_name");
+    inputElement.setAttribute("value", departmentName);
+    inputElement.classList.add("input");
+    inputElement.classList.add("is-medium");
+
+    // Replace department name with input element
+    departmentNameElement.replaceWith(inputElement);
+
+    // Replace edit button with save and cancel buttons
+    editButton.style.display = "none";
+    var saveButton = document.createElement("button");
+    saveButton.setAttribute("type", "submit");
+    saveButton.setAttribute("form", "update-form-" + id);
+    saveButton.classList.add("button", "is-success", "is-medium");
+    saveButton.textContent = "Save";
+    editButton.parentNode.insertBefore(saveButton, editButton.nextSibling);
+
+    var cancelButton = document.createElement("button");
+    cancelButton.setAttribute("type", "button");
+    cancelButton.classList.add("button", "is-danger", "is-medium");
+    cancelButton.textContent = "Cancel";
+    cancelButton.addEventListener("click", function () {
+      var spanElement = document.createElement("span");
+      spanElement.setAttribute("id", "department-name-" + id);
+      spanElement.textContent = departmentName;
+      inputElement.replaceWith(spanElement);
+
+      editButton.style.display = "inline-block";
+      saveButton.remove();
+      cancelButton.remove();
+    });
+    editButton.parentNode.insertBefore(cancelButton, editButton.nextSibling);
+
+    saveButton.style.display = "inline-block";
+    cancelButton.style.display = "inline-block";
+  }
+</script>
 {% endblock %}
