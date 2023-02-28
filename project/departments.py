@@ -21,9 +21,6 @@ def list_departments():
             new_department = Departments(department_name=department_name)
             db.session.add(new_department)
             db.session.commit()
-            flash('Department created successfully')
-
-        return redirect(url_for('departments.list_departments'))
 
     return render_template('departments.html', departments=departments)
 
