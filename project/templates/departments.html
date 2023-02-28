@@ -1,39 +1,28 @@
-{% extends 'base.html' %} {% block content %}
+{% extends "base.html" %} {% block content %}
+<h1 class="title">Departments</h1>
 
-<section class="section">
-  <div class="container">
-    <h1 class="title">Departments</h1>
-
-    {% with messages = get_flashed_messages() %} {% if messages %}
-    <div class="notification is-danger">
-      <button class="delete"></button>
-      <ul>
-        {% for message in messages %}
-        <li>{{ message }}</li>
-        {% endfor %}
-      </ul>
-    </div>
-    {% endif %} {% endwith %}
-
-    <form method="POST" action="{{ url_for('departments.list_departments') }}">
-      <div class="field has-addons">
-        <div class="control is-expanded">
-          <input
-            class="input"
-            type="text"
-            name="department_name"
-            placeholder="Department Name"
-          />
-        </div>
+<div class="columns">
+  <div class="column">
+    <h2 class="subtitle">Create New Department</h2>
+    <form action="{{ url_for('departments.list_departments') }}" method="POST">
+      <div class="field">
+        <label class="label">Department Name</label>
         <div class="control">
-          <button class="button is-primary" type="submit">
+          <input class="input" type="text" name="department_name" required />
+        </div>
+      </div>
+      <div class="field">
+        <div class="control">
+          <button type="submit" class="button is-primary">
             Create Department
           </button>
         </div>
       </div>
     </form>
-
-    <table class="table is-striped is-hoverable">
+  </div>
+  <div class="column">
+    <h2 class="subtitle">All Departments</h2>
+    <table class="table">
       <thead>
         <tr>
           <th>Department Name</th>
@@ -48,21 +37,19 @@
             <div class="buttons">
               <a
                 href="{{ url_for('departments.department', department_id=department.id) }}"
-                class="button is-info is-small"
+                class="button is-link"
+                >View</a
               >
-                View
-              </a>
+              <a
+                href="{{ url_for('departments.edit_department', department_id=department.id) }}"
+                class="button is-warning"
+                >Edit</a
+              >
               <form
-                method="POST"
                 action="{{ url_for('departments.delete_department', department_id=department.id) }}"
+                method="POST"
               >
-                <button
-                  type="submit"
-                  class="button is-danger is-small delete"
-                  onclick="return confirm('Are you sure you want to delete this department?')"
-                >
-                  Delete
-                </button>
+                <button type="submit" class="button is-danger">Delete</button>
               </form>
             </div>
           </td>
@@ -71,6 +58,6 @@
       </tbody>
     </table>
   </div>
-</section>
+</div>
 
 {% endblock %}

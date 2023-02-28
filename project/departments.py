@@ -49,6 +49,18 @@ def department(department_id):
 
     return render_template('department.html', department=department, projects=projects)
 
+@departments_bp.route('/departments/<int:department_id>/edit', methods=['POST'])
+@login_required
+def edit_department(department_id):
+    department = Departments.query.filter_by(id=department_id).first()
+    if department:
+        department_name = request.form.get('department_name')
+        if department_name:
+            department.department_name = department_name
+            db.session.commit()
+            flash('Department updated successfully')
+    return redirect(url_for('departments.list_departments'))
+
 @departments_bp.route('/projects/<int:project_id>', methods=['GET', 'POST'])
 @login_required
 def project(project_id):
