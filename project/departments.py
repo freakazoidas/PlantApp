@@ -65,9 +65,47 @@ def department(department_id):
     return render_template('department.html', department=department, projects=projects)
 
 
+
+
+@departments_bp.route('/<int:department_id>/projects', methods=['GET', 'POST'])
+@login_required
+def manage_projects(department_id):
+    department = Departments.query.filter_by(id=department_id).first()
+    if not department:
+        flash('Department not found')
+        return redirect(url_for('departments.list_departments'))
+
+    if request.method == 'POST':
+        project_id = request.form['project_id']
+        project = Projects.query.filter_by(id=project_id).first()
+        if not project:
+            flash('Project not found')
+        else:
+            intermediary = ProjectsDepartmentsIntermediary(project=project, department=department)
+            db.session.add(intermediary)
+            db.session.commit()
+            flash('Project assigned successfully')
+
+    available_projects = Projects.query.filter(~Projects.departments.any(id=department_id)).all()
+
+    return render_template('manage_projects.html', department=department, available_projects=available_projects)
+
+
+@departments_bp.route('/<int:department_id>/projects/<int:project_id>/delete', methods=['POST'])
+@login_required
+def delete_project_from_department(department_id, project_id):
+    intermediary = ProjectsDepartmentsIntermediary.query.filter_by(department_id=department_id, project_id=project_id).first()
+    if not intermediary:
+        flash('Project not found in department')
+    else:
+        db.session.delete(intermediary)
+        db.session.commit()
+        flash('Project removed successfully')
+    return redirect(url_for('departments.manage_projects', department_id=department_id))
+
 @departments_bp.route('/<int:department_id>/edit', methods=['GET', 'POST'])
 @login_required
-def edit_department(department_id):
+def update_department(department_id):
     department = Departments.query.filter_by(id=department_id).first()
     if not department:
         flash('Department not found')
@@ -84,7 +122,7 @@ def edit_department(department_id):
             flash('Department updated successfully')
         return redirect(url_for('departments.list_departments'))
 
-    return render_template('edit_department.html', department=department)
+    return render_template('update_department.html', department=department)
 
 
 @departments_bp.route('/projects', methods=['GET', 'POST'])
