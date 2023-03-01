@@ -22,6 +22,8 @@ def list_departments():
             new_department = Departments(department_name=department_name)
             db.session.add(new_department)
             db.session.commit()
+            flash('Department created successfully')
+        return redirect(url_for('departments.list_departments'))
 
     return render_template('departments.html', departments=departments)
 
@@ -35,7 +37,8 @@ def delete_department(department_id):
         db.session.delete(department)
         db.session.commit()
         flash('Department deleted successfully')
-    return redirect(url_for('departments.list_departments'))
+    return redirect(url_for('departments.list_departments', departments=Departments.query.all()))
+
 
 @departments_bp.route('/<int:department_id>', methods=['GET', 'POST'])
 @login_required
@@ -52,12 +55,15 @@ def department(department_id):
         if existing_department:
             flash('Department already exists')
         else:
+            # Retrieve the updated department name from the hidden span element
+            department_name = request.form.get('department_name_hidden')
             department.department_name = department_name
             db.session.commit()
             flash('Department updated successfully')
         return redirect(url_for('departments.department', department_id=department_id))
 
     return render_template('department.html', department=department, projects=projects)
+
 
 @departments_bp.route('/<int:department_id>/edit', methods=['GET', 'POST'])
 @login_required
