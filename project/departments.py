@@ -62,7 +62,10 @@ def department(department_id):
             flash('Department updated successfully')
         return redirect(url_for('departments.department', department_id=department_id))
 
-    return render_template('department.html', department=department, projects=projects)
+    available_projects = Projects.query.filter(~Projects.departments.any(id=department_id)).all()
+
+    return render_template('department_view.html', department=department, projects=projects, available_projects=available_projects)
+
 
 
 @departments_bp.route('/<int:department_id>/edit', methods=['GET', 'POST'])
@@ -85,6 +88,34 @@ def edit_department(department_id):
         return redirect(url_for('departments.list_departments'))
 
     return render_template('edit_department.html', department=department)
+
+@departments_bp.route('/<int:department_id>/assign_project', methods=['POST'])
+@login_required
+def assign_project(department_id):
+    department = Departments.query.filter_by(id=department_id).first()
+    if not department:
+        flash('Department not found')
+        return redirect(url_for('departments.list_departments'))
+
+    project_id = request.form['project_id']
+    if not project_id:
+        flash('Please choose a project to assign')
+        return redirect(url_for('departments.department', department_id=department_id))
+
+    project = Projects.query.get(project_id)
+    if not project:
+        flash('Project not found')
+        return redirect(url_for('departments.department', department_id=department_id))
+
+    if project in department.projects:
+        flash('Project already assigned to this department')
+    else:
+        intermediary = ProjectsDepartmentsIntermediary(project=project, department=department)
+        db.session.add(intermediary)
+        db.session.commit()
+        flash('Project assigned successfully')
+
+    return redirect(url_for('departments.department', department_id=department_id, projects=department.projects))
 
 
 @departments_bp.route('/projects', methods=['GET', 'POST'])

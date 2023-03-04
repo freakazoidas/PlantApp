@@ -4,6 +4,8 @@ venv/
 .venv/
 .auth
 .venv
+auth
+venv
 migrations
 
 .DS_Store

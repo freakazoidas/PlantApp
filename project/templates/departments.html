@@ -54,6 +54,7 @@
                 class="button is-link"
                 >View</a
               >
+
               <a
                 href="{{ url_for('departments.edit_department', department_id=department.id) }}"
                 class="button is-warning"
@@ -74,59 +75,4 @@
   </div>
 </div>
 
-<script>
-
-  function editDepartment(id, editButton) {
-    var departmentNameElement = document.getElementById("department-name-" + id);
-    var departmentName = departmentNameElement.value.trim();
-
-    // Set the department name in the hidden span element
-    var spanElement = document.getElementById("department-name-" + id + "-hidden");
-    spanElement.textContent = departmentName;
-
-    // Submit the update form
-    var form = document.getElementById("update-form-" + id);
-    form.submit();
-  }
-
-    // Create input element and set value
-    var inputElement = document.createElement("input");
-    inputElement.setAttribute("type", "text");
-    inputElement.setAttribute("name", "department_name");
-    inputElement.setAttribute("value", departmentName);
-    inputElement.classList.add("input");
-    inputElement.classList.add("is-medium");
-
-    // Replace department name with input element
-    departmentNameElement.replaceWith(inputElement);
-
-    // Replace edit button with save and cancel buttons
-    editButton.style.display = "none";
-    var saveButton = document.createElement("button");
-    saveButton.setAttribute("type", "submit");
-    saveButton.setAttribute("form", "update-form-" + id);
-    saveButton.classList.add("button", "is-success", "is-medium");
-    saveButton.textContent = "Save";
-    editButton.parentNode.insertBefore(saveButton, editButton.nextSibling);
-
-    var cancelButton = document.createElement("button");
-    cancelButton.setAttribute("type", "button");
-    cancelButton.classList.add("button", "is-danger", "is-medium");
-    cancelButton.textContent = "Cancel";
-    cancelButton.addEventListener("click", function () {
-      var spanElement = document.createElement("span");
-      spanElement.setAttribute("id", "department-name-" + id);
-      spanElement.textContent = departmentName;
-      inputElement.replaceWith(spanElement);
-
-      editButton.style.display = "inline-block";
-      saveButton.remove();
-      cancelButton.remove();
-    });
-    editButton.parentNode.insertBefore(cancelButton, editButton.nextSibling);
-
-    saveButton.style.display = "inline-block";
-    cancelButton.style.display = "inline-block";
-  }
-</script>
 {% endblock %}
