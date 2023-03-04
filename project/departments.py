@@ -1,6 +1,7 @@
 from flask import (Blueprint, flash, get_flashed_messages, redirect,
                    render_template, request, url_for)
 from flask_login import current_user, login_required
+from sqlalchemy import not_
 
 from . import db
 from .models import Departments, Projects, ProjectsDepartmentsIntermediary
@@ -47,8 +48,9 @@ def department(department_id):
     if not department:
         flash('Department not found')
         return redirect(url_for('departments.list_departments'))
+    
     projects = db.session.query(Projects).join(ProjectsDepartmentsIntermediary).filter_by(department_id=department_id)
-
+    
     if request.method == 'POST':
         department_name = request.form['department_name']
         existing_department = Departments.query.filter_by(department_name=department_name).first()
@@ -62,7 +64,8 @@ def department(department_id):
             flash('Department updated successfully')
         return redirect(url_for('departments.department', department_id=department_id))
 
-    available_projects = Projects.query.filter(~Projects.departments.any(id=department_id)).all()
+    assigned_project_ids = [project.id for project in projects]
+    available_projects = Projects.query.filter(~Projects.departments.any(id=department_id)).filter(~Projects.id.in_(assigned_project_ids)).all()
 
     return render_template('department_view.html', department=department, projects=projects, available_projects=available_projects)
 
@@ -106,23 +109,20 @@ def remove_project(department_id, project_id):
     department = Departments.query.filter_by(id=department_id).first()
     if not department:
         flash('Department not found')
-        return redirect(url_for('departments.list_departments'))
-
-    project = Projects.query.get(project_id)
-    if not project:
-        flash('Project not found')
-        return redirect(url_for('departments.department', department_id=department_id))
-
-    intermediary = ProjectsDepartmentsIntermediary.query.filter_by(project=project, department=department).first()
-    if not intermediary:
-        flash('Project not assigned to this department')
     else:
-        db.session.delete(intermediary)
-        db.session.commit()
-        flash('Project removed successfully')
+        project = Projects.query.get(project_id)
+        if not project:
+            flash('Project not found')
+        else:
+            intermediary = ProjectsDepartmentsIntermediary.query.filter_by(project=project, department=department).first()
+            if not intermediary:
+                flash('Project not assigned to this department')
+            else:
+                db.session.delete(intermediary)
+                db.session.commit()
+                flash('Project removed successfully')
 
     return redirect(url_for('departments.department', department_id=department_id))
-
 
 @departments_bp.route('/<int:department_id>/edit', methods=['GET', 'POST'])
 @login_required
@@ -151,31 +151,23 @@ def assign_project(department_id):
     department = Departments.query.filter_by(id=department_id).first()
     if not department:
         flash('Department not found')
-        return redirect(url_for('departments.list_departments'))
-
-    project_id = request.form['project_id']
-    if not project_id:
-        flash('Please choose a project to assign')
-        return redirect(url_for('departments.department', department_id=department_id))
-
-    project = Projects.query.get(project_id)
-    if not project:
-        flash('Project not found')
-        return redirect(url_for('departments.department', department_id=department_id))
-
-    if project in department.projects:
-        flash('Project already assigned to this department')
     else:
-        # Check if the project is already assigned to another department
-        if ProjectsDepartmentsIntermediary.query.filter_by(project=project).first():
-            flash('Project already assigned to another department')
+        project_id = request.form['project_id']
+        if not project_id:
+            flash('Please choose a project to assign')
         else:
-            intermediary = ProjectsDepartmentsIntermediary(project=project, department=department)
-            db.session.add(intermediary)
-            db.session.commit()
-            flash('Project assigned successfully')
+            project = Projects.query.get(project_id)
+            if not project:
+                flash('Project not found')
+            elif project in department.projects:
+                flash('Project already assigned to this department')
+            else:
+                intermediary = ProjectsDepartmentsIntermediary(project=project, department=department)
+                db.session.add(intermediary)
+                db.session.commit()
+                flash('Project assigned successfully')
 
-    return redirect(url_for('departments.department', department_id=department_id, projects=department.projects))
+    return redirect(url_for('departments.department', department_id=department_id))
 
 
 @departments_bp.route('/projects', methods=['GET', 'POST'])

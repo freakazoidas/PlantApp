@@ -4,6 +4,19 @@
     <h1 class="title is-3 has-text-centered">
       {{ department.department_name }}
     </h1>
+    {% with messages = get_flashed_messages(with_categories=true) %} {% if
+    messages %}
+    <div class="container">
+      {% for category, message in messages %}
+      <div
+        class="notification is-{{ category }} has-text-white has-background-info"
+      >
+        {{ message }}
+      </div>
+      {% endfor %}
+    </div>
+    {% endif %} {% endwith %}
+
     <table class="table">
       <thead>
         <tr>
@@ -19,16 +32,13 @@
           <td>{{ project.project_name }}</td>
           <td>{{ project.project_description }}</td>
           <td>
+            {% if project.project_picture %}
             <img
-              {%
-              if
-              project.project_picture
-              %}
-              <img
               src="{{ url_for('static', filename='images/' + project.project_picture) }}"
               alt="{{ project.project_name }} picture"
             />
-            {% endif %} alt="{{ project.project_name }}" width="100px" />
+            {% endif %}
+            <img alt="{{ project.project_name }}" width="100px" />
           </td>
           <td>
             <form
