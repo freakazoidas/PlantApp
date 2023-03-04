@@ -166,10 +166,14 @@ def assign_project(department_id):
     if project in department.projects:
         flash('Project already assigned to this department')
     else:
-        intermediary = ProjectsDepartmentsIntermediary(project=project, department=department)
-        db.session.add(intermediary)
-        db.session.commit()
-        flash('Project assigned successfully')
+        # Check if the project is already assigned to another department
+        if ProjectsDepartmentsIntermediary.query.filter_by(project=project).first():
+            flash('Project already assigned to another department')
+        else:
+            intermediary = ProjectsDepartmentsIntermediary(project=project, department=department)
+            db.session.add(intermediary)
+            db.session.commit()
+            flash('Project assigned successfully')
 
     return redirect(url_for('departments.department', department_id=department_id, projects=department.projects))
 
