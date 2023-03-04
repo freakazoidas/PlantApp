@@ -143,7 +143,7 @@ def edit_department(department_id):
             flash('Department updated successfully')
         return redirect(url_for('departments.list_departments'))
 
-    return render_template('edit_department.html', department=department)
+    return render_template('department_edit.html', department=department)
 
 @departments_bp.route('/<int:department_id>/assign_project', methods=['POST'])
 @login_required
