@@ -66,6 +66,62 @@ def department(department_id):
 
     return render_template('department_view.html', department=department, projects=projects, available_projects=available_projects)
 
+@departments_bp.route('/<int:department_id>/reassign_project/<int:project_id>', methods=['POST'])
+@login_required
+def reassign_project(department_id, project_id):
+    department = Departments.query.filter_by(id=department_id).first()
+    if not department:
+        flash('Department not found')
+        return redirect(url_for('departments.list_departments'))
+
+    new_department_id = request.form['department_id']
+    if not new_department_id:
+        flash('Please choose a department to reassign the project to')
+        return redirect(url_for('departments.department', department_id=department_id))
+
+    project = Projects.query.get(project_id)
+    if not project:
+        flash('Project not found')
+        return redirect(url_for('departments.department', department_id=department_id))
+
+    new_department = Departments.query.get(new_department_id)
+    if not new_department:
+        flash('Department not found')
+        return redirect(url_for('departments.department', department_id=department_id))
+
+    intermediary = ProjectsDepartmentsIntermediary.query.filter_by(project=project, department=department).first()
+    if not intermediary:
+        flash('Project not assigned to this department')
+    else:
+        intermediary.department = new_department
+        db.session.commit()
+        flash('Project reassigned successfully')
+
+    return redirect(url_for('departments.department', department_id=department_id))
+
+
+@departments_bp.route('/<int:department_id>/remove_project/<int:project_id>', methods=['POST'])
+@login_required
+def remove_project(department_id, project_id):
+    department = Departments.query.filter_by(id=department_id).first()
+    if not department:
+        flash('Department not found')
+        return redirect(url_for('departments.list_departments'))
+
+    project = Projects.query.get(project_id)
+    if not project:
+        flash('Project not found')
+        return redirect(url_for('departments.department', department_id=department_id))
+
+    intermediary = ProjectsDepartmentsIntermediary.query.filter_by(project=project, department=department).first()
+    if not intermediary:
+        flash('Project not assigned to this department')
+    else:
+        db.session.delete(intermediary)
+        db.session.commit()
+        flash('Project removed successfully')
+
+    return redirect(url_for('departments.department', department_id=department_id))
 
 
 @departments_bp.route('/<int:department_id>/edit', methods=['GET', 'POST'])
