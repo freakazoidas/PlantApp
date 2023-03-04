@@ -83,10 +83,11 @@
           </td>
           <td>
             <a
-              href="{{ url_for('departments.projects', project_id=project.id) }}"
+              href="{{ url_for('departments.view_project', project_id=project.id) }}"
               class="button is-info is-small"
               >View</a
             >
+
             <form
               method="POST"
               action="{{ url_for('departments.delete_project', project_id=project.id) }}"

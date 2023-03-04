@@ -166,4 +166,48 @@ def delete_project(project_id):
     flash('Project deleted successfully')
     return redirect(url_for('departments.projects'))
 
+@departments_bp.route('/projects/<int:project_id>/view', methods=['GET'])
+@login_required
+def view_project(project_id):
+    project = Projects.query.get_or_404(project_id)
+    return render_template('project.html', project=project)
 
+
+
+@departments_bp.route('/projects/<int:project_id>', methods=['GET', 'POST'])
+@login_required
+def project(project_id):
+    project = Projects.query.get_or_404(project_id)
+
+    if request.method == 'POST':
+        project_name = request.form['project_name']
+        project_description = request.form['project_description']
+        department_ids = request.form.getlist('department_ids')
+        project_picture = None
+
+        if 'project_picture' in request.files:
+            project_picture = request.files['project_picture']
+            if project_picture.filename != '':
+                project_picture.save('static/images/' + project_picture.filename)
+
+        project.project_name = project_name
+        project.project_description = project_description
+        project.project_picture = project_picture.filename if project_picture else None
+
+        # Clear the existing departments
+        project.departments.clear()
+
+        # Assign the selected departments to the project
+        for department_id in department_ids:
+            department = Departments.query.filter_by(id=department_id).first()
+            if department:
+                intermediary = ProjectsDepartmentsIntermediary(project=project, department=department)
+                project.departments.append(intermediary)
+
+        db.session.commit()
+        flash('Project updated successfully')
+        return redirect(url_for('departments.project', project_id=project_id))
+
+    departments = Departments.query.all()
+
+    return render_template('project.html', project=project, departments=departments)
