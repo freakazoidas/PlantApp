@@ -94,4 +94,4 @@ class PlantGroupUsers(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     plant_group_id = db.Column(db.Integer, db.ForeignKey('plant_group.id'), nullable=False)
     user = db.relationship('User', backref=db.backref('group_users', lazy=True))
-    plant_group = db.relationship('PlantGroup', backref=db.backref('group_users', lazy=True), cascade='all, delete-orphan')
+    plant_group = db.relationship('PlantGroup', backref=db.backref('group_users', lazy=True), single_parent=True, cascade='all, delete-orphan')

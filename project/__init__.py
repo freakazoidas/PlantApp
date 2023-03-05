@@ -31,12 +31,16 @@ def create_app():
     # register blueprints with app
     from .auth import auth_bp
     from .models import (BillGroupIntermediary, BillGroups, Departments,
-                         IndividualBill, Projects,
-                         ProjectsDepartmentsIntermediary, User)
+                         IndividualBill, PlantGroup, PlantGroupIntermediary,
+                         PlantGroupUsers, PlantSingle, PlantWateringHistory,
+                         Projects, ProjectsDepartmentsIntermediary, User)
+
     app.register_blueprint(auth_bp)
 
     from .main import main
+    from .plants import plants_bp
     app.register_blueprint(main)
+    app.register_blueprint(plants_bp)
 
     from .departments import departments_bp
     app.register_blueprint(departments_bp)
