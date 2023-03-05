@@ -41,10 +41,12 @@
               value="{{ department.id }}"
               {%
               if
-              department
+              department.id
               in
-              project.departments
-              %}checked{%
+              assigned_departments
+              %}
+              checked
+              {%
               endif
               %}
             />

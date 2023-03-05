@@ -260,8 +260,9 @@ def project(project_id):
 
         db.session.commit()
         flash('Project updated successfully')
-        return redirect(url_for('departments.project', project_id=project_id))
+        return redirect(url_for('departments.projects'))
 
     departments = Departments.query.all()
+    assigned_departments = [intermediary.department_id for intermediary in ProjectsDepartmentsIntermediary.query.filter_by(project_id=project_id).all()]
 
-    return render_template('project.html', project=project, departments=departments)
+    return render_template('project.html', project=project, departments=departments, assigned_departments=assigned_departments)
