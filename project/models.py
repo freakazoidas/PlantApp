@@ -61,3 +61,37 @@ class ProjectsDepartmentsIntermediary(db.Model):
     department_id = Column(Integer, ForeignKey('departments.id'))
     project = relationship("Projects", back_populates="departments")
     department = relationship("Departments", back_populates="projects")
+
+class PlantSingle(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(255), nullable=False)
+    type = db.Column(db.String(255))
+    picture = db.Column(db.String(1000))
+    watering_frequency = db.Column(db.Integer, nullable=False)
+    replanting_frequency = db.Column(db.Integer)
+    fertilizations_frequency = db.Column(db.Integer)
+
+class PlantWateringHistory(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    plant_id = db.Column(db.Integer, db.ForeignKey('plant_single.id'))
+    date = db.Column(db.Date, nullable=False)
+    comment = db.Column(db.String(1000))
+    plant = db.relationship('PlantSingle', backref=db.backref('watering_history', lazy=True))
+
+class PlantGroup(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(255), nullable=False, unique=True)
+
+class PlantGroupIntermediary(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    plant_group_id = db.Column(db.Integer, db.ForeignKey('plant_group.id'), nullable=False)
+    plant_id = db.Column(db.Integer, db.ForeignKey('plant_single.id'), nullable=False)
+    plant_group = db.relationship('PlantGroup', backref=db.backref('plant_intermediaries', lazy=True))
+    plant = db.relationship('PlantSingle', backref=db.backref('group_intermediaries', lazy=True))
+
+class PlantGroupUsers(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    plant_group_id = db.Column(db.Integer, db.ForeignKey('plant_group.id'), nullable=False)
+    user = db.relationship('User', backref=db.backref('group_users', lazy=True))
+    plant_group = db.relationship('PlantGroup', backref=db.backref('group_users', lazy=True), cascade='all, delete-orphan')
