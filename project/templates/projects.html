@@ -1,110 +1,80 @@
-{% extends 'base.html' %} {% block content %}
-<section class="section">
-  <div class="container">
-    <h1 class="title">Projects</h1>
+{% extends "base.html" %} {% block content %}
+<div class="container mt-5">
+  <h1 class="mb-4">Projects</h1>
 
-    <form
-      method="POST"
-      action="{{ url_for('departments.projects') }}"
-      enctype="multipart/form-data"
-    >
-      <div class="field">
-        <label class="label">Project Name</label>
-        <div class="control">
-          <input class="input" type="text" name="project_name" required />
-        </div>
-      </div>
+  {% for project in projects %}
+  <div class="card mb-5">
+    <div class="card-body">
+      <h2 class="card-title">{{ project.project_name }}</h2>
+      <p class="card-text">{{ project.project_description }}</p>
+      {% if project.project_picture %}
+      <img
+        src="{{ url_for('static', filename='images/' + project.project_picture) }}"
+        alt="{{ project.project_name }}"
+        class="img-fluid mb-3"
+      />
+      {% endif %}
+      <p class="card-text">
+        <strong>Departments:</strong> {% for department in project.departments
+        %} {{ department.department.department_name }} {% if not loop.last %},
+        {% endif %} {% endfor %}
+      </p>
+    </div>
+  </div>
+  {% endfor %}
 
-      <div class="field">
-        <label class="label">Project Description</label>
-        <div class="control">
-          <textarea
-            class="textarea"
-            name="project_description"
+  <div class="card mb-5">
+    <div class="card-body">
+      <h2 class="card-title">Create New Project</h2>
+      <form method="post" enctype="multipart/form-data">
+        <div class="mb-3">
+          <label for="project_name" class="form-label">Project Name:</label>
+          <input
+            type="text"
+            class="form-control"
+            name="project_name"
             required
-          ></textarea>
+          />
         </div>
-      </div>
-
-      <div class="field">
-        <label class="label">Departments</label>
-        <div class="control">
+        <div class="mb-3">
+          <label for="project_description" class="form-label"
+            >Project Description:</label
+          >
+          <textarea class="form-control" name="project_description"></textarea>
+        </div>
+        <div class="mb-3">
+          <label for="project_picture" class="form-label"
+            >Project Picture:</label
+          >
+          <input type="file" class="form-control" name="project_picture" />
+        </div>
+        <div class="mb-3">
+          <label for="department_ids" class="form-label"
+            >Assign Departments:</label
+          >
           {% for department in departments %}
-          <label class="checkbox">
+          <div class="form-check">
             <input
+              class="form-check-input"
               type="checkbox"
-              name="department_ids[]"
+              name="department_ids"
               value="{{ department.id }}"
+              id="department-{{ department.id }}"
             />
-            {{ department.department_name }}
-          </label>
+            <label
+              class="form-check-label"
+              for="department-{{ department.id }}"
+            >
+              {{ department.department_name }}
+            </label>
+          </div>
           {% endfor %}
         </div>
-      </div>
-
-      <div class="field">
-        <label class="label">Project Picture</label>
-        <div class="control">
-          <input class="input" type="file" name="project_picture" />
+        <div>
+          <button type="submit" class="btn btn-primary">Create Project</button>
         </div>
-      </div>
-
-      <div class="field is-grouped">
-        <div class="control">
-          <button class="button is-link" type="submit">Create Project</button>
-        </div>
-        <div class="control">
-          <a
-            class="button is-text"
-            href="{{ url_for('departments.list_departments') }}"
-            >Cancel</a
-          >
-        </div>
-      </div>
-    </form>
-
-    {% if projects %}
-    <table class="table is-striped is-hoverable">
-      <thead>
-        <tr>
-          <th>Project Name</th>
-          <th>Departments</th>
-          <th>Actions</th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for project in projects %}
-        <tr>
-          <td>{{ project.project_name }}</td>
-          <td>
-            {% for department in project.departments %} {{
-            department.department_name }}{% if not loop.last %}, {% endif %} {%
-            endfor %}
-          </td>
-          <td>
-            <a
-              href="{{ url_for('departments.view_project', project_id=project.id) }}"
-              class="button is-info is-small"
-              >View</a
-            >
-
-            <form
-              method="POST"
-              action="{{ url_for('departments.delete_project', project_id=project.id) }}"
-              style="display: inline-block"
-            >
-              <button class="button is-danger is-small" type="submit">
-                Delete
-              </button>
-            </form>
-          </td>
-        </tr>
-        {% endfor %}
-      </tbody>
-    </table>
-    {% else %}
-    <p>No projects found.</p>
-    {% endif %}
+      </form>
+    </div>
   </div>
-</section>
+</div>
 {% endblock %}
