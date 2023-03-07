@@ -1,0 +1,55 @@
+{% extends 'base.html' %} {% block content %}
+<h1>Plant Groups</h1>
+{% with messages = get_flashed_messages() %} {% if messages %}
+<div class="alert alert-dismissible alert-{{ messages[0][1] }}">
+  <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+  {{ messages[0][0] }}
+</div>
+{% endif %} {% endwith %}
+
+<h2>Create New Plant Group</h2>
+<form method="POST" action="{{ url_for('plants.plant_groups') }}">
+  <div class="mb-3">
+    <label for="group_name" class="form-label">Group Name</label>
+    <input
+      type="text"
+      class="form-control"
+      id="group_name"
+      name="group_name"
+      required
+    />
+  </div>
+  <button type="submit" class="btn btn-primary">Create</button>
+</form>
+
+{% if plant_groups %}
+<hr />
+<h2>Your Plant Groups</h2>
+<ul>
+  {% for group in plant_groups %}
+  <li>
+    <h3>{{ group.name }}</h3>
+    {% if plant_names[group.name] %}
+    <ul>
+      {% for plant_name in plant_names[group.name] %}
+      <li>{{ plant_name }}</li>
+      {% endfor %}
+    </ul>
+    {% else %}
+    <p>No plants in this group.</p>
+    {% endif %}
+    <form
+      method="POST"
+      action="{{ url_for('plants.delete_group', group_id=group.id) }}"
+    >
+      <button type="submit" class="btn btn-danger">Delete Group</button>
+    </form>
+    <a
+      href="{{ url_for('plants.plant_group_single', group_id=group.id) }}"
+      class="btn btn-primary"
+      >View Group</a
+    >
+  </li>
+  {% endfor %}
+</ul>
+{% endif %} {% endblock %}
