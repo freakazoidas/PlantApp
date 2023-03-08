@@ -1,102 +1,58 @@
-{% extends 'base.html' %} {% block content %}
+{% extends "base.html" %} {% block content %}
+<h1>{{ group.name }}</h1>
 
-<h1>Create New Plant</h1>
-<form method="POST" action="{{ url_for('plants.create_plant') }}">
-  <div class="row">
-    <div class="col-md-6">
-      <table class="table">
-        <tbody>
-          <tr>
-            <th scope="row">Plant Name</th>
-            <td>
-              <input
-                type="text"
-                class="form-control"
-                id="plant_name"
-                name="plant_name"
-                required
-              />
-            </td>
-          </tr>
-          <tr>
-            <th scope="row">Plant Type</th>
-            <td>
-              <input
-                type="text"
-                class="form-control"
-                id="plant_type"
-                name="plant_type"
-                required
-              />
-            </td>
-          </tr>
-          <tr>
-            <th scope="row">Plant Pictures</th>
-            <td>
-              <input
-                type="file"
-                class="form-control"
-                id="plant_pictures"
-                name="plant_pictures[]"
-                multiple
-                required
-              />
-            </td>
-          </tr>
-          <tr>
-            <th scope="row">Watering Frequency (days)</th>
-            <td>
-              <input
-                type="number"
-                class="form-control"
-                id="watering_frequency"
-                name="watering_frequency"
-                required
-                min="0"
-              />
-            </td>
-          </tr>
-          <tr>
-            <th scope="row">Replanting Frequency (days)</th>
-            <td>
-              <input
-                type="number"
-                class="form-control"
-                id="replanting_frequency"
-                name="replanting_frequency"
-                value="365"
-                min="0"
-              />
-            </td>
-          </tr>
-          <tr>
-            <th scope="row">Fertilization Frequency (days)</th>
-            <td>
-              <input
-                type="number"
-                class="form-control"
-                id="fertilization_frequency"
-                name="fertilization_frequency"
-                value="365"
-                min="0"
-              />
-            </td>
-          </tr>
-          <tr>
-            <th scope="row">Assign Group</th>
-            <td>
-              <select class="form-select" id="group_id" name="group_id">
-                {% for group in plant_groups %}
-                <option value="{{ group.id }}">{{ group.name }}</option>
-                {% endfor %}
-              </select>
-            </td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-    <div class="col-md-6"></div>
+{% for intermediary, last_watered in plants %}
+<div class="plant-block">
+  <div class="plant-name">{{ intermediary.plant.name }}</div>
+  <div class="plant-watering-frequency">
+    Needs to be watered once in {{ intermediary.plant.watering_frequency }} days
   </div>
-  <button type="submit" class="btn btn-primary">Create</button>
-</form>
-{% endblock %}
+  <img
+    src="{{ intermediary.plant.picture }}"
+    alt="{{ intermediary.plant.name }}"
+    class="plant-picture"
+  />
+  <div class="plant-water-status">
+    {% if last_watered == "No watering data" %}
+    <div class="plant-watering-overdue">Never watered</div>
+    {% else %} {% set days_since_last_watering = (current_date -
+    last_watered).days %} {% set days_until_next_watering =
+    intermediary.plant.watering_frequency - days_since_last_watering %} {% if
+    days_since_last_watering == 0 %}
+    <div class="plant-watered-today">Plant watered today</div>
+    {% elif days_since_last_watering > intermediary.plant.watering_frequency %}
+    <div class="plant-watering-overdue">
+      Watering overdue by {{ days_since_last_watering -
+      intermediary.plant.watering_frequency }} days
+    </div>
+    {% else %}
+    <div class="plant-next-watering">
+      Days until next watering: {{ days_until_next_watering }}
+    </div>
+    {% endif %} {% endif %}
+  </div>
+  <div class="plant-comment-form">
+    <form method="POST" action="{{ url_for('plants.update_plant') }}">
+      <input
+        type="hidden"
+        name="plant_id"
+        value="{{ intermediary.plant.id }}"
+      />
+      <input
+        type="hidden"
+        name="group_id"
+        value="{{ intermediary.plant_group_id }}"
+      />
+      <textarea name="comment" placeholder="Add a comment...">
+{{ last_watered.comment if last_watered else "" }}</textarea
+      >
+      <input
+        type="date"
+        name="watering_date"
+        value="{{ current_date.strftime('%Y-%m-%d') }}"
+      />
+      <button type="submit">Update</button>
+    </form>
+  </div>
+</div>
+{% endfor %} {% endblock %}

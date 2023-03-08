@@ -60,25 +60,26 @@ def plant_group_single(group_id):
     # Get the plant group
     group = PlantGroup.query.filter_by(id=group_id).first()
 
-    # Get all plants in the group
-    plants = PlantGroupIntermediary.query.join(PlantSingle).filter(PlantGroupIntermediary.plant_group_id == group_id).all()
+    # Get all plants in the group assigned to the current user and their latest watering history
+    user_plants = []
+    plant_intermediaries = PlantGroupIntermediary.query.filter_by(plant_group_id=group_id).join(PlantSingle).all()
 
-    return render_template('plant_group_single.html', group=group, plants=plants)
+    for intermediary in plant_intermediaries:
+        group_user = PlantGroupUsers.query.filter_by(user_id=current_user.id, plant_group_id=intermediary.plant_group_id).first()
+        if group_user and group_user.plant_group == intermediary.plant_group:
+            latest_history = PlantWateringHistory.query.filter_by(plant_id=intermediary.plant.id).order_by(PlantWateringHistory.date.desc()).first()
+            last_watered = latest_history.date if latest_history else "No watering data"
+            user_plants.append((intermediary, last_watered))
 
-def get_days_until_next_watering(last_watered_date, watering_frequency):
-    """
-    Calculates the number of days until the next watering based on the last watering date and watering frequency.
-    """
-    today = datetime.datetime.now().date()
-    next_watering_date = last_watered_date + datetime.timedelta(days=watering_frequency)
-    days_until_next_watering = (next_watering_date - today).days
-    return days_until_next_watering
+    current_date = datetime.datetime.now().date()
+
+    return render_template('plant_group_single.html', group=group, plants=user_plants, current_date=current_date)
 
 @plants_bp.route('/create_plant', methods=['GET', 'POST'])
 @login_required
 def create_plant():
     if request.method == 'POST':
-        # Create a new plant and add it to the selected plant group
+        # Create a new plant and add it to the selected plant group assigned to the current user
         name = request.form.get('plant_name')
         type = request.form.get('plant_type')
         watering_frequency = request.form.get('watering_frequency')
@@ -95,10 +96,10 @@ def create_plant():
         )
         db.session.add(new_plant)
 
-        # Add the new plant to the selected plant group
-        plant_group = PlantGroup.query.get(group_id)
+        # Add the new plant to the selected plant group assigned to the current user
+        group_user = PlantGroupUsers.query.filter_by(user_id=current_user.id, plant_group_id=group_id).first()
         new_intermediary = PlantGroupIntermediary(
-            plant_group=plant_group,
+            plant_group=group_user.plant_group,
             plant=new_plant,
         )
         db.session.add(new_intermediary)
@@ -114,6 +115,9 @@ def create_plant():
 
     return render_template('plant_create.html', plant_groups=plant_groups)
 
+
+    return render_template('plant_create.html', plant_groups=plant_groups)
+
 @plants_bp.route('/update_plant', methods=['POST'])
 @login_required
 def update_plant():
@@ -126,11 +130,12 @@ def update_plant():
 
     # Find the plant and make sure it belongs to the current user
     plant = PlantSingle.query.filter_by(id=plant_id).first()
-    if plant and plant.groups.filter_by(user_id=current_user.id).first():
+    group_users = PlantGroupUsers.query.filter_by(user_id=current_user.id).all()
+    if plant and any(intermediary.plant_group_id in [group_user.plant_group_id for group_user in group_users] for intermediary in plant.group_intermediaries):
         # Update the plant's last watering date and add a new entry to PlantWateringHistory
         plant.last_watered = watering_date
         db.session.add(PlantWateringHistory(plant=plant, date=watering_date, comment=comment))
         db.session.commit()
         flash('Plant watering history updated!', 'success')
 
-    return redirect(url_for('plants.plant_group_single', group_id=plant.group.id))
+    return redirect(url_for('plants.plant_group_single', group_id=plant.group_intermediaries[0].plant_group_id))
