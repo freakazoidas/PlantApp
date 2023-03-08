@@ -31,28 +31,36 @@
     </div>
     {% endif %} {% endif %}
   </div>
-  <div class="plant-comment-form">
-    <form method="POST" action="{{ url_for('plants.update_plant') }}">
-      <input
-        type="hidden"
-        name="plant_id"
-        value="{{ intermediary.plant.id }}"
-      />
-      <input
-        type="hidden"
-        name="group_id"
-        value="{{ intermediary.plant_group_id }}"
-      />
-      <textarea name="comment" placeholder="Add a comment...">
-{{ last_watered.comment if last_watered else "" }}</textarea
-      >
-      <input
-        type="date"
-        name="watering_date"
-        value="{{ current_date.strftime('%Y-%m-%d') }}"
-      />
-      <button type="submit">Update</button>
+  <div class="plant-buttons">
+    <form
+      method="GET"
+      action="{{ url_for('plants.plant_single_edit', plant_id=intermediary.plant.id) }}"
+    >
+      <button type="submit">View Plant</button>
     </form>
+    <div class="plant-comment-form">
+      <form method="POST" action="{{ url_for('plants.update_plant') }}">
+        <input
+          type="hidden"
+          name="plant_id"
+          value="{{ intermediary.plant.id }}"
+        />
+        <input
+          type="hidden"
+          name="group_id"
+          value="{{ intermediary.plant_group_id }}"
+        />
+        <textarea name="comment" placeholder="Add a comment...">
+          {{ last_watered.comment if last_watered else "" }}
+        </textarea>
+        <input
+          type="date"
+          name="watering_date"
+          value="{{ current_date.strftime('%Y-%m-%d') }}"
+        />
+        <button type="submit">Update</button>
+      </form>
+    </div>
   </div>
 </div>
 {% endfor %} {% endblock %}

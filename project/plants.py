@@ -116,7 +116,6 @@ def create_plant():
     return render_template('plant_create.html', plant_groups=plant_groups)
 
 
-    return render_template('plant_create.html', plant_groups=plant_groups)
 
 @plants_bp.route('/update_plant', methods=['POST'])
 @login_required
@@ -139,3 +138,81 @@ def update_plant():
         flash('Plant watering history updated!', 'success')
 
     return redirect(url_for('plants.plant_group_single', group_id=plant.group_intermediaries[0].plant_group_id))
+
+@plants_bp.route('/plant_single_edit/<int:plant_id>', methods=['GET', 'POST'])
+@login_required
+def plant_single_edit(plant_id):
+    # Get all plant groups assigned to the logged in user
+    plant_groups = PlantGroup.query.join(PlantGroupUsers).filter(
+        PlantGroupUsers.user_id == current_user.id
+    ).all()
+
+    # Get the plant being edited
+    plant = PlantSingle.query.filter_by(id=plant_id).first()
+
+    # Make sure the plant belongs to the current user
+    group_users = PlantGroupUsers.query.filter_by(user_id=current_user.id).all()
+    if not plant or not any(
+        intermediary.plant_group_id in [group_user.plant_group_id for group_user in group_users]
+        for intermediary in plant.group_intermediaries
+    ):
+        flash('Plant not found.', 'error')
+        return redirect(url_for('plants.plant_groups'))
+
+    if request.method == 'POST':
+        # Update the plant with the new information
+        plant.name = request.form.get('plant_name')
+        plant.type = request.form.get('plant_type')
+        plant.watering_frequency = request.form.get('watering_frequency')
+        plant.replanting_frequency = request.form.get('replanting_frequency')
+        plant.fertilizations_frequency = request.form.get('fertilization_frequency')
+        db.session.commit()
+        flash('Plant updated!', 'success')
+
+    # Get the IDs of the plant groups the plant belongs to
+    group_ids = [intermediary.plant_group_id for intermediary in plant.group_intermediaries]
+
+    # Pass the plant and plant group information to the template
+    return render_template(
+        'plant_single_edit.html',
+        plant=plant,
+        plant_id=plant_id,
+        groups=plant_groups,
+        group_ids=group_ids,
+    )
+
+
+@plants_bp.route('/delete_plant/<int:plant_id>', methods=['POST'])
+@login_required
+def delete_plant(plant_id):
+    # Find the plant and make sure it belongs to the current user
+    plant = PlantSingle.query.filter_by(id=plant_id).first()
+    group_users = PlantGroupUsers.query.filter_by(user_id=current_user.id).all()
+    if plant and any(intermediary.plant_group_id in [group_user.plant_group_id for group_user in group_users] for intermediary in plant.group_intermediaries):
+        # Delete the plant and any associated data
+        PlantGroupIntermediary.query.filter_by(plant_id=plant.id).delete()
+        PlantWateringHistory.query.filter_by(plant_id=plant.id).delete()
+        PlantSingle.query.filter_by(id=plant.id).delete()
+        db.session.commit()
+        flash('Plant deleted!', 'success')
+
+    return redirect(url_for('plants.plant_groups'))
+
+@plants_bp.route('/clear_last_entry/<int:plant_id>', methods=['DELETE'])
+@login_required
+def clear_last_entry(plant_id):
+    # Find the plant and make sure it belongs to the current user
+    plant = PlantSingle.query.filter_by(id=plant_id).first()
+    group_users = PlantGroupUsers.query.filter_by(user_id=current_user.id).all()
+    if plant and any(
+        intermediary.plant_group_id in [group_user.plant_group_id for group_user in group_users]
+        for intermediary in plant.group_intermediaries
+    ):
+        # Delete the last watering history entry for the plant
+        last_entry = PlantWateringHistory.query.filter_by(plant_id=plant_id).order_by(PlantWateringHistory.date.desc()).first()
+        if last_entry:
+            db.session.delete(last_entry)
+            db.session.commit()
+            flash('Last watering history entry deleted!', 'success')
+
+    return redirect(url_for('plants.plant_single_edit', plant_id=plant_id))
