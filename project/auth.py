@@ -1,11 +1,49 @@
-from flask import Blueprint, flash, redirect, render_template, request, url_for
-from flask_login import login_required, login_user, logout_user
+import datetime
+import jwt
+from flask import (Blueprint, flash, jsonify, redirect, render_template,
+                   request, url_for)
+from flask_login import current_user, login_required, login_user, logout_user
 from werkzeug.urls import url_parse
+from functools import wraps
 
 from .forms import LoginForm, RegistrationForm
 from .models import User, db
+from flask import Response
 
 auth_bp = Blueprint('auth', __name__, url_prefix='/auth')
+
+# JWT token configuration
+JWT_SECRET_KEY = 'jwt-secret-key-goes-here'
+JWT_EXPIRATION_DELTA = datetime.timedelta(days=1)
+
+def jwt_required(func):
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        token = None
+
+        if 'Authorization' in request.headers:
+            parts = request.headers['Authorization'].split()
+            if len(parts) == 2 and parts[0] == 'Bearer':
+                token = parts[1]
+
+        if not token:
+            token = request.cookies.get('jwt_token')
+
+        if not token:
+            return Response('Authorization token is missing.', status=401)
+
+        try:
+            data = jwt.decode(token, JWT_SECRET_KEY, algorithms=['HS256'])
+            current_user = User.query.get(data['user_id'])
+        except:
+            return Response('Authorization token is invalid.', status=401)
+
+        return func(*args, **kwargs)
+
+    return wrapper
+
+
+
 
 @auth_bp.route('/signup', methods=['GET', 'POST'])
 def signup():
@@ -37,24 +75,28 @@ def login():
     if form.validate_on_submit():
         email = form.email.data
         password = form.password.data
-        remember = form.remember_me.data
 
         # Check if email is registered and password is correct
         user = User.query.filter_by(email=email).first()
         if user is None or not user.check_password(password):
-            flash('Invalid email or password', category='error')
+            flash('Invalid email or password')
             return redirect(url_for('auth.login'))
 
-        # Log user in and redirect to next page
-        login_user(user, remember=remember)
-        next_page = request.args.get('next')
-        if not next_page or url_parse(next_page).netloc != '':
-            next_page = url_for('main.index')
-        return redirect(next_page)
+        # Log user in and generate JWT token
+        login_user(user, remember=form.remember_me.data)
+        payload = {
+            'user_id': user.id,
+            'exp': datetime.datetime.utcnow() + JWT_EXPIRATION_DELTA
+        }
+        jwt_token_bytes = jwt.encode(payload, JWT_SECRET_KEY, algorithm='HS256')
+        jwt_token_str = jwt_token_bytes
 
-    return render_template('login.html', title='Log In', form=form)
+        response = redirect(url_for('main.index'))
+        response.set_cookie('jwt_token', jwt_token_str, httponly=True, secure=True)
+        flash('You have been logged in')
+        return response
 
-
+    return render_template('login.html', title='Sign In', form=form)
 
 @auth_bp.route('/logout')
 @login_required

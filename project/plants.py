@@ -1,30 +1,37 @@
 import datetime
+from functools import wraps
 
-from flask import (Blueprint, flash, get_flashed_messages, redirect,
+import requests
+from flask import (Blueprint, flash, get_flashed_messages, jsonify, redirect,
                    render_template, request, url_for)
 from flask_login import current_user, login_required
 from sqlalchemy import not_
 
 from . import db
+from .auth import jwt_required
 from .models import (PlantGroup, PlantGroupIntermediary, PlantGroupUsers,
                      PlantSingle, PlantWateringHistory, User)
 
 plants_bp = Blueprint('plants', __name__, url_prefix='/plants')
 
 @plants_bp.route('/plant_groups', methods=['GET', 'POST'])
+@jwt_required
 @login_required
 def plant_groups():
+    # Get user_id from current_user
+    user_id = current_user.get_id()
+
     if request.method == 'POST':
         # Create a new plant group and assign it to the logged in user
         new_group = PlantGroup(name=request.form.get('group_name'))
         db.session.add(new_group)
-        new_group_user = PlantGroupUsers(user=current_user, plant_group=new_group)
+        new_group_user = PlantGroupUsers(user_id=user_id, plant_group=new_group)
         db.session.add(new_group_user)
         db.session.commit()
         flash('New plant group created!', 'success')
 
     # Get all plant groups assigned to the logged in user
-    plant_groups = PlantGroup.query.join(PlantGroupUsers).filter(PlantGroupUsers.user_id == current_user.id).all()
+    plant_groups = PlantGroup.query.join(PlantGroupUsers).filter(PlantGroupUsers.user_id == user_id).all()
 
     # Get all plant names assigned to each plant group
     plant_names = {}
@@ -110,6 +117,7 @@ def plant_group_single(group_id):
     return render_template('plant_group_single.html', group=group, plants=user_plants, current_date=current_date)
 
 @plants_bp.route('/create_plant', methods=['GET', 'POST'])
+@jwt_required
 @login_required
 def create_plant():
     if request.method == 'POST':
