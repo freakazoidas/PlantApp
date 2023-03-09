@@ -1,11 +1,13 @@
 import datetime
+import os
 from functools import wraps
 
 import requests
 from flask import (Blueprint, flash, get_flashed_messages, jsonify, redirect,
-                   render_template, request, url_for)
+                   render_template, request, url_for, current_app)
 from flask_login import current_user, login_required
 from sqlalchemy import not_
+from werkzeug.utils import secure_filename
 
 from . import db
 from .auth import jwt_required
@@ -140,9 +142,18 @@ def create_plant():
             flash('Frequency values must be numbers between 1 and 365.', 'error')
             return redirect(url_for('plants.create_plant'))
 
+        # Handle file upload
+        if 'plant_pictures' in request.files:
+            file = request.files['plant_pictures']
+            if file.filename != '':
+                filename = secure_filename(file.filename)
+                file.save(os.path.join(current_app.config['UPLOAD_FOLDER'], filename))
+                picture_url = url_for('static', filename=f'uploads/{filename}')
+
         new_plant = PlantSingle(
             name=name,
             type=type,
+            picture=picture_url,
             watering_frequency=watering_frequency,
             replanting_frequency=replanting_frequency,
             fertilizations_frequency=fertilizations_frequency,
@@ -166,8 +177,7 @@ def create_plant():
         PlantGroupUsers.user_id == current_user.id
     ).all()
 
-    return render_template('plant_create.html', plant_groups=plant_groups)
-
+    return render_template('plant_create.html', plant_groups=plant_groups, app=current_app)
 
 
 @plants_bp.route('/update_plant', methods=['POST'])

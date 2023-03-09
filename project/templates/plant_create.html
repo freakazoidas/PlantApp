@@ -99,5 +99,13 @@
       <button type="submit" class="btn btn-primary">Create</button>
     </div>
   </form>
+
+  {% if plant_picture %}
+  <div class="row mt-5">
+    <div class="col-md-6 mx-auto">
+      <img src="{{ plant_picture }}" alt="Plant Picture" class="img-fluid" />
+    </div>
+  </div>
+  {% endif %}
 </div>
 {% endblock %}

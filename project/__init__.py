@@ -4,6 +4,7 @@ from flask_login import LoginManager
 from flask_migrate import Migrate
 from flask_sqlalchemy import SQLAlchemy
 from flask_wtf.csrf import CSRFProtect
+import os
 
 # initialize extensions
 db = SQLAlchemy()
@@ -16,12 +17,15 @@ def create_app():
     # configure app
     app.config['SECRET_KEY'] = 'secret-key-goes-here'
     app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///db.sqlite'
-
+    app.config['UPLOAD_FOLDER'] = 'project/UPLOAD_FOLDER'
     # initialize extensions with app
     db.init_app(app)
     bootstrap.init_app(app)
     login_manager.init_app(app)
     migrate = Migrate(app, db)
+    # Ensure that UPLOAD_FOLDER directory exists
+    if not os.path.exists(app.config['UPLOAD_FOLDER']):
+        os.makedirs(app.config['UPLOAD_FOLDER'])
 
     # create tables
     with app.app_context():

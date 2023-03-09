@@ -1,14 +1,14 @@
 import datetime
+from functools import wraps
+
 import jwt
-from flask import (Blueprint, flash, jsonify, redirect, render_template,
-                   request, url_for)
+from flask import (Blueprint, Response, flash, jsonify, redirect,
+                   render_template, request, url_for)
 from flask_login import current_user, login_required, login_user, logout_user
 from werkzeug.urls import url_parse
-from functools import wraps
 
 from .forms import LoginForm, RegistrationForm
 from .models import User, db
-from flask import Response
 
 auth_bp = Blueprint('auth', __name__, url_prefix='/auth')
 
