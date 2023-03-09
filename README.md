@@ -34,6 +34,7 @@ You can use these credentials to test:
 - JWT token
 - SQLAlchemy
 - Werkzeug
+- Jinja2
 
 ## Plant App
 
