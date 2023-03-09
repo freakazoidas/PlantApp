@@ -1,7 +1,22 @@
 {% extends "base.html" %} {% block content %}
 <div class="container mt-5">
   <h1 class="mb-4">Projects</h1>
-
+  <form method="GET" action="{{ url_for('departments.projects') }}">
+    <div class="field has-addons">
+      <div class="control">
+        <input
+          class="input"
+          type="text"
+          name="search"
+          placeholder="Search projects by name"
+          value="{{ request.args.get('search', '') }}"
+        />
+      </div>
+      <div class="control">
+        <button class="button is-info" type="submit">Search</button>
+      </div>
+    </div>
+  </form>
   <table class="table">
     <thead>
       <tr>

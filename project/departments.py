@@ -150,7 +150,9 @@ def edit_department(department_id):
 @departments_bp.route('/projects', methods=['GET', 'POST'])
 @login_required
 def projects():
-    projects = Projects.query.all()
+    search = request.args.get('search', '')
+    projects_query = Projects.query.filter(Projects.project_name.ilike(f'%{search}%'))
+    projects = projects_query.all()
 
     if request.method == 'POST':
         project_name = request.form['project_name']
