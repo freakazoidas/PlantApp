@@ -6,25 +6,25 @@
       {{ form.hidden_tag() }}
       <div class="field">
         {{ form.email.label() }}
-        <div class="control">{{ form.email() }}</div>
+        <div class="control has-text-centered">{{ form.email() }}</div>
         {% for error in form.email.errors %}
         <p class="help is-danger">{{ error }}</p>
         {% endfor %}
       </div>
       <div class="field">
         {{ form.password.label() }}
-        <div class="control">{{ form.password() }}</div>
+        <div class="control has-text-centered">{{ form.password() }}</div>
         {% for error in form.password.errors %}
         <p class="help is-danger">{{ error }}</p>
         {% endfor %}
       </div>
       <div class="field">
-        <div class="control">
+        <div class="control has-text-centered">
           {{ form.remember_me() }} {{ form.remember_me.label() }}
         </div>
       </div>
       <div class="field">
-        <div class="control">
+        <div class="control has-text-centered">
           <button class="button is-primary" type="submit">Sign In</button>
         </div>
       </div>

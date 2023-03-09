@@ -13,6 +13,16 @@ To run the app locally, follow these steps:
 5. Run the app: `flask run`
 6. (Optional) Update the `requirements.txt` file with any new packages: `pip freeze > requirements.txt`
 
+## Flask DB Migration
+
+To perform a Flask database migration, follow these steps:
+
+1. Make sure the Flask-Migrate package is installed: pip install Flask-Migrate
+2. Create a migration repository: flask db init
+3. Create a migration script: flask db migrate -m "migration message"
+4. Upgrade the database: flask db upgrade
+5. To downgrade the database, run flask db downgrade with the name of the revision to downgrade to.
+
 ## Credentials
 
 You can use these credentials to test:
