@@ -4,11 +4,13 @@ from flask_login import current_user, login_required
 from sqlalchemy import not_
 
 from . import db
+from .auth import jwt_required
 from .models import Departments, Projects, ProjectsDepartmentsIntermediary
 
 departments_bp = Blueprint('departments', __name__, url_prefix='/departments')
 
 @departments_bp.route('/', methods=['GET', 'POST'])
+@jwt_required
 @login_required
 def list_departments():
     departments = Departments.query.all()
@@ -148,6 +150,7 @@ def edit_department(department_id):
 
 
 @departments_bp.route('/projects', methods=['GET', 'POST'])
+@jwt_required
 @login_required
 def projects():
     search = request.args.get('search', '')
