@@ -121,6 +121,17 @@ def create_plant():
         fertilizations_frequency = request.form.get('fertilization_frequency')
         group_id = request.form.get('group_id')
 
+        # Check that watering_frequency, replanting_frequency, and fertilizations_frequency are numbers and less than or equal to 365
+        try:
+            watering_frequency = int(watering_frequency)
+            replanting_frequency = int(replanting_frequency)
+            fertilizations_frequency = int(fertilizations_frequency)
+            if not (1 <= watering_frequency <= 365 and 1 <= replanting_frequency <= 365 and 1 <= fertilizations_frequency <= 365):
+                raise ValueError("Frequency values must be between 1 and 365")
+        except ValueError:
+            flash('Frequency values must be numbers between 1 and 365.', 'error')
+            return redirect(url_for('plants.create_plant'))
+
         new_plant = PlantSingle(
             name=name,
             type=type,
