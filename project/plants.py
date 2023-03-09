@@ -29,10 +29,44 @@ def plant_groups():
     # Get all plant names assigned to each plant group
     plant_names = {}
     for group in plant_groups:
-        plants = PlantGroupIntermediary.query.join(PlantSingle).filter(PlantGroupIntermediary.plant_group_id == group.id).all()
-        plant_names[group.name] = [plant.plant.name for plant in plants]
+        intermediaries = PlantGroupIntermediary.query.filter_by(plant_group_id=group.id).all()
+        plant_names[group.name] = [intermediary.plant.name for intermediary in intermediaries]
 
     return render_template('plant_groups.html', plant_groups=plant_groups, plant_names=plant_names)
+
+@plants_bp.route('/assign_user/<int:group_id>', methods=['POST'])
+@login_required
+def assign_user(group_id):
+    # Get the email and assigned group ID from the form submission
+    email = request.form.get('user_email')
+    assigned_group_id = request.form.get('assigned_group')
+
+    # Check if the user with the given email address exists
+    user = User.query.filter_by(email=email).first()
+    if not user:
+        flash('User with the given email address does not exist.', 'error')
+        return redirect(url_for('plants.plant_groups'))
+
+    # Check if the user is already assigned to the given group
+    existing_assignment = PlantGroupUsers.query.filter_by(user_id=user.id, plant_group_id=assigned_group_id).first()
+    if existing_assignment:
+        flash('User is already assigned to this group.', 'warning')
+        return redirect(url_for('plants.plant_groups'))
+
+    # Make sure the group the user is being assigned to belongs to the current user
+    group_user = PlantGroupUsers.query.filter_by(user_id=current_user.id, plant_group_id=group_id).first()
+    if not group_user:
+        flash('Plant group not found.', 'error')
+        return redirect(url_for('plants.plant_groups'))
+
+    # Add the user to the group
+    new_assignment = PlantGroupUsers(user=user, plant_group_id=assigned_group_id)
+    db.session.add(new_assignment)
+    db.session.commit()
+
+    flash(f'{email} has been assigned to the group!', 'success')
+    return redirect(url_for('plants.plant_groups'))
+
 
 @plants_bp.route('/delete_group/<int:group_id>', methods=['POST'])
 @login_required
