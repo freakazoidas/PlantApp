@@ -1,26 +1,63 @@
-# BillSplit6
+# Plant App
 
-How to run:  
-$ python3 -m venv auth  
-$ . auth/Scripts/activate (for windows)  
-$ . auth/bin/activate (for ubuntu)  
-$ pip install -r requirements.txt  
-$ export FLASK_APP=project  
-$ flask run  
-$ pip freeze > requirements.txt (don't forget to run this once in a while)
+## How to Run
 
-tou can use these credentials to test:  
-id:  
-asas@gmail.com
+To run the app locally, follow these steps:
 
-pass:  
-asasas
+1. Create a virtual environment: `python3 -m venv auth`
+2. Activate the virtual environment:
+   - For Windows: `. auth/Scripts/activate`
+   - For Ubuntu: `. auth/bin/activate`
+3. Install the requirements: `pip install -r requirements.txt`
+4. Set the `FLASK_APP` environment variable: `export FLASK_APP=project`
+5. Run the app: `flask run`
+6. (Optional) Update the `requirements.txt` file with any new packages: `pip freeze > requirements.txt`
 
-Groups db:
+## Credentials
 
-![image](https://user-images.githubusercontent.com/26854208/214595857-e6de2c11-5436-47a6-88a2-bd5c1a0af89b.png)
+You can use these credentials to test:
 
-CSS Bulma
+- Email: asas@gmail.com
+- Password: asasas
 
-root  
-image.png
+## Groups Database
+
+![image](https://i.imgur.com/C1xxeJH.png)
+
+## Styles Used
+
+- CSS Bulma
+- CSS Bootstrap
+
+## Technologies Used
+
+- JWT token
+- SQLAlchemy
+- Werkzeug
+
+## Plant App
+
+### Features
+
+- Create, delete, and edit plant groups
+- Assign plant groups to friends to share and track plants
+- Add, remove, and edit plants and their characteristics
+- Upload pictures for plants (not currently viewable)
+- Track the watering history of individual plants
+- Remove last watering entry if entered accidentally
+- Pre-select today's date when watering plants, but select a custom date in the calendar
+
+## Department Project Management App
+
+### Features
+
+- Create, delete, and edit departments
+- Create, delete, and edit projects
+- Assign projects to departments and vice versa
+- Prepopulate information if the project is already assigned to a department and vice versa
+
+## Bill Split App
+
+### Features
+
+- Enter expenses and split them among friends

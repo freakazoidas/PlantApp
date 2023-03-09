@@ -3,8 +3,8 @@ import os
 from functools import wraps
 
 import requests
-from flask import (Blueprint, flash, get_flashed_messages, jsonify, redirect,
-                   render_template, request, url_for, current_app)
+from flask import (Blueprint, current_app, flash, get_flashed_messages,
+                   jsonify, redirect, render_template, request, url_for)
 from flask_login import current_user, login_required
 from sqlalchemy import not_
 from werkzeug.utils import secure_filename
@@ -236,13 +236,9 @@ def plant_single_edit(plant_id):
     group_ids = [intermediary.plant_group_id for intermediary in plant.group_intermediaries]
 
     # Pass the plant and plant group information to the template
-    return render_template(
-        'plant_single_edit.html',
-        plant=plant,
-        plant_id=plant_id,
-        groups=plant_groups,
-        group_ids=group_ids,
-    )
+    return render_template("plant_single_edit.html", plant=plant, groups=plant_groups, app=current_app)
+
+
 
 
 @plants_bp.route('/delete_plant/<int:plant_id>', methods=['POST'])
