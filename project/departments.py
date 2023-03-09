@@ -151,7 +151,10 @@ def edit_department(department_id):
 @login_required
 def projects():
     search = request.args.get('search', '')
+    department_id = request.args.get('department_id')
     projects_query = Projects.query.filter(Projects.project_name.ilike(f'%{search}%'))
+    if department_id:
+        projects_query = projects_query.filter(Projects.departments.any(Departments.id == department_id))
     projects = projects_query.all()
 
     if request.method == 'POST':
@@ -180,7 +183,7 @@ def projects():
         db.session.commit()
         return redirect(url_for('departments.projects'))
 
-    return render_template('projects.html', projects=projects, departments=Departments.query.all())
+    return render_template('projects.html', projects=projects, departments=Departments.query.all(), department_id=department_id)
 
 @departments_bp.route('/assign_project', methods=['POST'])
 @login_required

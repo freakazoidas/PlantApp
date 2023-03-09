@@ -47,6 +47,8 @@ class Projects(db.Model):
     project_description = Column(String(1000), nullable=False)
     project_picture = Column(String(1000), nullable=True)
     departments = relationship("ProjectsDepartmentsIntermediary", back_populates="project", cascade="all, delete-orphan")
+    def has_department(self, department_id):
+        return ProjectsDepartmentsIntermediary.query.filter_by(project_id=self.id, department_id=department_id).first() is not None
 
 class Departments(db.Model):
     __tablename__ = 'departments'

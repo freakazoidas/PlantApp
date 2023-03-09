@@ -4,6 +4,27 @@
   <form method="GET" action="{{ url_for('departments.projects') }}">
     <div class="field has-addons">
       <div class="control">
+        <div class="select">
+          <select name="department_id">
+            <option value="">All Departments</option>
+            {% for department in departments %}
+            <option value="{{ department.id }}">
+              {{ department.department_name }}
+            </option>
+            {% endfor %}
+          </select>
+        </div>
+      </div>
+      <div class="control">
+        <button type="submit" class="button is-info">
+          Filter by Department
+        </button>
+      </div>
+    </div>
+  </form>
+  <form method="GET" action="{{ url_for('departments.projects') }}">
+    <div class="field has-addons">
+      <div class="control">
         <input
           class="input"
           type="text"
@@ -28,7 +49,8 @@
       </tr>
     </thead>
     <tbody>
-      {% for project in projects %}
+      {% for project in projects %} {% if not department_id or
+      project.has_department(department_id) %}
       <tr>
         <td>{{ project.project_name }}</td>
         <td>{{ project.project_description }}</td>
@@ -69,7 +91,7 @@
           </div>
         </td>
       </tr>
-      {% endfor %}
+      {% endif %} {% endfor %}
     </tbody>
   </table>
 
